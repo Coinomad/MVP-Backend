@@ -1,7 +1,10 @@
 import express from "express";
 import dotenv from 'dotenv';
-import walletRoutes from "./routes/walletsRoutes.js";
+import authRoutesRouter from "./routes/authRoutes.js";
 import ExpressMongoSanitize from "express-mongo-sanitize";
+
+
+
 
 
 
@@ -19,8 +22,8 @@ app.use(express.urlencoded({ extended: true }));
 
 
 
-app.use("/v1/api/wallet",walletRoutes)
-// app.use("/users", authRoutes);
+// app.use("/v1/api/wallet",walletRoutes)
+app.use("/v1/api/auth", authRoutesRouter);
 
 
 app.listen(port, () => {

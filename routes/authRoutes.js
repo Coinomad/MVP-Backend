@@ -1,18 +1,19 @@
 import express from "express";
-import { Cleanbody } from "../middleware/Cleanbody";
+import { Signup } from "../controllers/authController.js";
+
 
 const authRoutes = express.Router();
 
 authRoutes.post("/signup", Signup);
 
-authRoutes.patch("/activate", Activate);
+// authRoutes.patch("/activate", Activate);
 
-authRoutes.post("/login", Login);
+// authRoutes.post("/login", Login);
 
-authRoutes.patch("/forgot", ForgotPassword);
+// authRoutes.patch("/forgot", ForgotPassword);
 
-authRoutes.patch("/reset", ResetPassword);
+// authRoutes.patch("/reset", ResetPassword);
 
-authRoutes.get("/logout", validateToken, Logout);
+// authRoutes.get("/logout", validateToken, Logout);
 
 export default authRoutes;
