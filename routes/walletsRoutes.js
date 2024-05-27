@@ -1,7 +1,9 @@
+
 import express from "express"
 import { generateWallet } from "../controllers/walletController.js"
 
-const router=express.Router()
-router.get("/", generateWallet)
+const walletRoutes=express.Router()
 
-export default router
+walletRoutes.get("/", generateWallet)
+
+export default walletRoutes
