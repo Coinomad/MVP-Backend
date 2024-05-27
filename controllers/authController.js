@@ -1,6 +1,7 @@
+import { generateWallet } from "../helpers/createWallet.js";
 import { userSchema } from "../helpers/validation.js";
 
-export const Signup = (req, res) => {
+export const Signup = async(req, res) => {
   try {
     const result = userSchema.validate(req.body);
     if (result.error) {
@@ -9,6 +10,27 @@ export const Signup = (req, res) => {
         error: true,
         status: 400,
         message: result.error.message,
+      });
+    }
+    
+    const generatedWallet = generateWallet();
+    if (generatedWallet.error) {
+      console.log(result.error.message);
+      return res.status(400).json({
+        error: true,
+        status: 400,
+        message: result.error.message,
+      });
+    }
+
+    user = await User.findOne({
+      email: result.value.email,
+    });
+
+    if (user) {
+      return res.json({
+        error: true,
+        message: "Email is already in use",
       });
     }
 
