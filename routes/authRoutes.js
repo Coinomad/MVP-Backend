@@ -1,12 +1,12 @@
 import express from "express";
-import { Signup } from "../controllers/authController.js";
+import { Activate, Signup } from "../controllers/authController.js";
 
 
 const authRoutes = express.Router();
 
 authRoutes.post("/signup", Signup);
 
-// authRoutes.patch("/activate", Activate);
+authRoutes.patch("/activate", Activate);
 
 // authRoutes.post("/login", Login);
 
