@@ -2,7 +2,7 @@ import Joi from "joi";
 
 export const userSchema = Joi.object().keys({
   name: Joi.string().required(),
-  email: Joi.string().email({ minDomainSegments: 2 }),
+  email: Joi.string().required().email({ minDomainSegments: 2 }),
   password: Joi.string().required().min(8),
   confirmPassword: Joi.string().valid(Joi.ref("password")).required(),
 });
@@ -13,11 +13,11 @@ export const userSchemaLogin = Joi.object().keys({
 });
 
 export const userSchemaForgotPassword = Joi.object().keys({
-  email: Joi.string().email({ minDomainSegments: 2 }),
+  email: Joi.string().required().email({ minDomainSegments: 2 }),
 });
 
 export const userSchemaResetPassword = Joi.object().keys({
-  token: Joi.string().email({ minDomainSegments: 2 }),
+  token: Joi.string().required(),
   newPassword: Joi.string().required().min(8),
   confirmPassword: Joi.string().valid(Joi.ref("newPassword")).required(),
 });
