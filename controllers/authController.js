@@ -5,6 +5,7 @@ import {
   userSchema,
   userSchemaForgotPassword,
   userSchemaLogin,
+  userSchemaLogout,
   userSchemaResetPassword,
 } from "../helpers/validation.js";
 import { comparePasswords, hashPassword, User } from "../model/userModel.js";
@@ -204,7 +205,6 @@ export const Login = async (req, res) => {
   }
 };
 
-
 export const ForgotPassword = async (req, res) => {
   try {
     const result = userSchemaForgotPassword.validate(req.body);
@@ -293,6 +293,33 @@ export const ResetPassword = async (req, res) => {
   } catch (error) {
     console.error("reset-password-error", error);
     return res.status(500).json({
+      error: true,
+      message: error.message,
+    });
+  }
+};
+
+export const Logout = async (req, res) => {
+  try {
+    const result = userSchemaLogout.validate(req.body);
+    if (result.error) {
+      return res.status(400).json({
+        error: true,
+        message: result.error.message,
+      });
+    }
+
+    let user = await User.findOne({ userId: result.value.id });
+
+    user.accessToken = "";
+    user.markModified("accessToken");
+
+    await user.save();
+
+    return res.status(200).send({ success: true, message: "User Logged out" });
+  } catch (error) {
+    console.error("user-logout-error", error);
+    return res.stat(500).json({
       error: true,
       message: error.message,
     });

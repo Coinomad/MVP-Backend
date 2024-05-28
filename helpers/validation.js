@@ -21,3 +21,9 @@ export const userSchemaResetPassword = Joi.object().keys({
   newPassword: Joi.string().required().min(8),
   confirmPassword: Joi.string().valid(Joi.ref("newPassword")).required(),
 });
+
+
+export const userSchemaLogout = Joi.object().keys({
+  id: Joi.string().required(),
+ 
+});
