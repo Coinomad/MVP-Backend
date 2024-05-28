@@ -73,14 +73,14 @@ export const Signup = async (req, res) => {
 // activate account
 export const Activate = async (req, res) => {
   try {
-    const { email, code } = req.body;
-    if (!email || !code) {
+    const result = userSchema.validate(req.body);
+    if (result.error) {
+      console.log(result.error.message);
       return res.status(400).json({
         error: true,
-        message: "Please provide a valid email and activation code",
+        message: result.error.message,
       });
     }
-
     const generatedWallet = await generateWallet(); // to generate wallet address
     if (generatedWallet.error) {
       return res.status(400).json({
@@ -90,8 +90,8 @@ export const Activate = async (req, res) => {
     }
 
     const user = await User.findOne({
-      email: email,
-      emailToken: code,
+      email: result.value.email,
+      emailToken: result.value.code,
       emailTokenExpires: { $gt: Date.now() },
     });
 

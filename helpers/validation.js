@@ -8,8 +8,13 @@ export const userSchema = Joi.object().keys({
 });
 
 export const userSchemaLogin = Joi.object().keys({
-  email: Joi.string().email({ minDomainSegments: 2 }),
+  email: Joi.string().required().email({ minDomainSegments: 2 }),
   password: Joi.string().required().min(8),
+});
+
+export const userSchemaActivate = Joi.object().keys({
+  email: Joi.string().required().email({ minDomainSegments: 2 }),
+  code: Joi.string().required(),
 });
 
 export const userSchemaForgotPassword = Joi.object().keys({
