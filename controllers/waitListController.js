@@ -12,13 +12,13 @@ export const WaitListController = async (req, res) => {
       });
     }
     // check if email is already used
-    const user = await User.findOne({
+    const waitemail = await WaitListModel.findOne({
       email: result.value.email,
     });
-    if (user) {
+    if (waitemail) {
       return res.status(400).json({
         success: false,
-        message: "Email is already in use",
+        message: "Already part of waitlist",
       });
     }
     // save the user on mongodb
