@@ -5,6 +5,9 @@ import ExpressMongoSanitize from "express-mongo-sanitize";
 import { notFoundMiddleware } from "./middleware/notFoundMiddleware.js";
 import mongoose from "mongoose";
 import waitListRouter from "./routes/waitListRoute.js";
+import cors from 'cors';
+
+
 
 dotenv.config();
 
@@ -12,6 +15,7 @@ const port = process.env.PORT || 3000;
 const app = express();
 // Sanitize user input
 app.use(ExpressMongoSanitize());
+app.use(cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
