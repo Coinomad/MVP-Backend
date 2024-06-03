@@ -3,6 +3,7 @@ import { generateJwt } from "../helpers/generateJwt.js";
 import { sendEmail } from "../helpers/mailer.js";
 import {
   userSchema,
+  userSchemaActivate,
   userSchemaForgotPassword,
   userSchemaLogin,
   userSchemaLogout,
@@ -17,7 +18,7 @@ export const Signup = async (req, res) => {
     if (result.error) {
       console.log(result.error.message);
       return res.status(400).json({
-        error: true,
+        success: false,
         message: result.error.message,
       });
     }
@@ -27,7 +28,7 @@ export const Signup = async (req, res) => {
     });
     if (user) {
       return res.status(400).json({
-        error: true,
+        success: false,
         message: "Email is already in use",
       });
     }
@@ -35,7 +36,6 @@ export const Signup = async (req, res) => {
     const hash = await hashPassword(result.value.password);
     const id = uuid(); //Generate unique id for the user.
     result.value.userId = id;
-
     delete result.value.confirmPassword;
     result.value.password = hash;
 
@@ -46,7 +46,7 @@ export const Signup = async (req, res) => {
     const sendCode = await sendEmail(result.value.email, code);
     if (sendCode.error) {
       return res.status(500).json({
-        error: true,
+        success: false,
         message: "Couldn't send verification email.",
       });
     }
@@ -58,13 +58,13 @@ export const Signup = async (req, res) => {
     await newUser.save();
 
     return res.status(201).json({
-      error: false,
+      success: true,
       message: "User registered successfully",
     });
   } catch (error) {
     console.error("signup-error", error);
     return res.status(500).json({
-      error: true,
+      success: false,
       message: "Cannot Register",
     });
   }
@@ -73,18 +73,18 @@ export const Signup = async (req, res) => {
 // activate account
 export const Activate = async (req, res) => {
   try {
-    const result = userSchema.validate(req.body);
+    const result = userSchemaActivate.validate(req.body);
     if (result.error) {
       console.log(result.error.message);
       return res.status(400).json({
-        error: true,
+        success: false,
         message: result.error.message,
       });
     }
     const generatedWallet = await generateWallet(); // to generate wallet address
     if (generatedWallet.error) {
       return res.status(400).json({
-        error: true,
+        success: false,
         message: generatedWallet.error.message,
       });
     }
@@ -97,14 +97,14 @@ export const Activate = async (req, res) => {
 
     if (!user) {
       return res.status(400).json({
-        error: true,
+        success: false,
         message: "Invalid email or activation code",
       });
     }
 
     if (user.active) {
       return res.status(400).json({
-        error: true,
+        success: false,
         message: "Account already activated",
       });
     }
@@ -115,12 +115,6 @@ export const Activate = async (req, res) => {
     user.privateKey = generatedWallet.privateKey;
     user.walletAddress = generatedWallet.walletAddress;
 
-    user.markModified("emailToken");
-    user.markModified("emailTokenExpires");
-    user.markModified("active");
-    user.markModified("privateKey");
-    user.markModified("walletAddress");
-
     await user.save();
 
     return res.status(200).json({
@@ -130,7 +124,7 @@ export const Activate = async (req, res) => {
   } catch (error) {
     console.error("activation-error", error);
     return res.status(500).json({
-      error: true,
+      success: false,
       message: "An error occurred while activating the account",
     });
   }
@@ -141,7 +135,7 @@ export const Login = async (req, res) => {
     const result = userSchemaLogin.validate(req.body);
     if (result.error) {
       return res.status(400).json({
-        error: true,
+        success: false,
         message: result.error.message,
       });
     }
@@ -152,7 +146,7 @@ export const Login = async (req, res) => {
     // NOT FOUND - Throw error
     if (!user) {
       return res.status(404).json({
-        error: true,
+        success: false,
         message: "Account not found",
       });
     }
@@ -160,7 +154,7 @@ export const Login = async (req, res) => {
     //2. Throw error if account is not activated
     if (!user.active) {
       return res.status(400).json({
-        error: true,
+        success: false,
         message: "You must verify your email to activate your account",
       });
     }
@@ -173,7 +167,7 @@ export const Login = async (req, res) => {
 
     if (!isValid) {
       return res.status(400).json({
-        error: true,
+        success: false,
         message: "Invalid credentials",
       });
     }
@@ -182,7 +176,7 @@ export const Login = async (req, res) => {
     const { error, token } = await generateJwt(user.email, user.userId);
     if (error) {
       return res.status(500).json({
-        error: true,
+        success: false,
         message: "Couldn't create access token. Please try again later",
       });
     }
@@ -199,7 +193,7 @@ export const Login = async (req, res) => {
   } catch (err) {
     console.error("Login error", err);
     return res.status(500).json({
-      error: true,
+      success: false,
       message: "Couldn't login. Please try again later.",
     });
   }
@@ -211,7 +205,7 @@ export const ForgotPassword = async (req, res) => {
     if (result.error) {
       console.log(result.error.message);
       return res.status(400).json({
-        error: true,
+        success: false,
         message: result.error.message,
       });
     }
@@ -220,7 +214,7 @@ export const ForgotPassword = async (req, res) => {
     });
     if (!user) {
       return res.status(404).json({
-        error: true,
+        success: false,
         message: "Account not found",
       });
     }
@@ -230,7 +224,7 @@ export const ForgotPassword = async (req, res) => {
 
     if (response.error) {
       return res.status(500).json({
-        error: true,
+        success: false,
         message: "Couldn't send mail. Please try again later.",
       });
     }
@@ -248,7 +242,7 @@ export const ForgotPassword = async (req, res) => {
   } catch (error) {
     console.error("forgot-password-error", error);
     return res.status(500).json({
-      error: true,
+      success: false,
       message: error.message,
     });
   }
@@ -259,7 +253,7 @@ export const ResetPassword = async (req, res) => {
     const result = userSchemaResetPassword.validate(req.body);
     if (result.error) {
       return res.status(400).json({
-        error: true,
+        success: false,
         message: result.error.message,
       });
     }
@@ -271,7 +265,7 @@ export const ResetPassword = async (req, res) => {
 
     if (!user) {
       return res.status(404).json({
-        error: true,
+        success: false,
         message: "Account not found",
       });
     }
@@ -293,7 +287,7 @@ export const ResetPassword = async (req, res) => {
   } catch (error) {
     console.error("reset-password-error", error);
     return res.status(500).json({
-      error: true,
+      success: false,
       message: error.message,
     });
   }
@@ -304,7 +298,7 @@ export const Logout = async (req, res) => {
     const result = userSchemaLogout.validate(req.body);
     if (result.error) {
       return res.status(400).json({
-        error: true,
+        success: false,
         message: result.error.message,
       });
     }
@@ -320,7 +314,7 @@ export const Logout = async (req, res) => {
   } catch (error) {
     console.error("user-logout-error", error);
     return res.stat(500).json({
-      error: true,
+      success: false,
       message: error.message,
     });
   }
