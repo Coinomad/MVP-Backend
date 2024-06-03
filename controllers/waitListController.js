@@ -15,6 +15,7 @@ export const WaitListController = async (req, res) => {
     const waitemail = await WaitListModel.findOne({
       email: result.value.email,
     });
+    
     if (waitemail) {
       return res.status(400).json({
         success: false,
