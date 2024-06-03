@@ -18,7 +18,7 @@ export const WaitListController = async (req, res) => {
 
     return res.status(200).send({ success: true, message: "Joined Wait List" });
   } catch (error) {
-    return res.stat(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message,
     });
