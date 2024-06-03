@@ -4,6 +4,7 @@ import authRoutesRouter from "./routes/authRoutes.js";
 import ExpressMongoSanitize from "express-mongo-sanitize";
 import { notFoundMiddleware } from "./middleware/notFoundMiddleware.js";
 import mongoose from "mongoose";
+import waitListRouter from "./routes/waitListRoute.js";
 
 dotenv.config();
 
@@ -22,6 +23,9 @@ mongoose
 
 // /v1/api/auth/
 app.use("/v1/api/auth", authRoutesRouter);
+
+// /v1/api/auth/
+app.use("/v1/api/waitlist", waitListRouter);
 // for notfound
 app.use(notFoundMiddleware);
 

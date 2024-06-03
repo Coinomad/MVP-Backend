@@ -14,6 +14,7 @@ authRoutes.patch("/forgot", ForgotPassword);
 
 authRoutes.patch("/reset", ResetPassword);
 
+
 // authRoutes.get("/logout", validateToken, Logout);
 
 export default authRoutes;

@@ -27,8 +27,10 @@ export const userSchemaResetPassword = Joi.object().keys({
   confirmPassword: Joi.string().valid(Joi.ref("newPassword")).required(),
 });
 
-
 export const userSchemaLogout = Joi.object().keys({
   id: Joi.string().required(),
- 
+});
+
+export const waitListSchema = Joi.object().keys({
+  email: Joi.string().required().email({ minDomainSegments: 2 }),
 });

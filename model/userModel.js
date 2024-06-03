@@ -11,8 +11,8 @@ const userSchema = new Schema(
     resetPasswordToken: { type: String, default: null },
     resetPasswordExpires: { type: Date, default: null },
     emailToken: { type: String, required: true, default: null },
-    privateKey: { type: String,  default: null },
-    walletAddress: { type: String,  default: null },
+    privateKey: { type: String, default: null },
+    walletAddress: { type: String, default: null },
     emailTokenExpires: { type: Date, default: null },
     accessToken: { type: String, default: null },
   },
@@ -25,6 +25,7 @@ const userSchema = new Schema(
 );
 
 export const User = mongoose.model("user", userSchema);
+
 
 export const hashPassword = async (password) => {
   try {
