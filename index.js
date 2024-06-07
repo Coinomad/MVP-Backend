@@ -1,13 +1,13 @@
 import express from "express";
 import dotenv from "dotenv";
-import authRoutesRouter from "./routes/authRoutes.js";
+// import authRoutesRouter from "./routes/authRoutes.js";
 import ExpressMongoSanitize from "express-mongo-sanitize";
 import { notFoundMiddleware } from "./middleware/notFoundMiddleware.js";
 import mongoose from "mongoose";
 import waitListRouter from "./routes/waitListRoute.js";
-import cors from 'cors';
-
-
+import cors from "cors";
+import employerauthRoutes from "./routes/employerAuthRoutes.js";
+import employeeauthRoutes from "./routes/employeeAuthRoutes.js";
 
 dotenv.config();
 
@@ -26,11 +26,18 @@ mongoose
   .catch((error) => console.error("Connection error"));
 
 // /v1/api/auth/
-app.use("/v1/api/auth", authRoutesRouter);
+// app.use("/v1/api/auth", authRoutesRouter);
+
+// /v1/api/employeeauth
+app.use("/v1/api/employeeauth", employeeauthRoutes);
+
+// /v1/api/employerauth
+app.use("/v1/api/employerauth", employerauthRoutes);
 
 // /v1/api/auth/
 app.use("/v1/api/waitlist", waitListRouter);
-// for notfound
+
+// for notfound 404
 app.use(notFoundMiddleware);
 
 app.listen(port, () => {

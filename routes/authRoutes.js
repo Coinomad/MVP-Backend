@@ -1,20 +1,20 @@
-import express from "express";
-import { Activate, ForgotPassword, Login, ResetPassword, Signup } from "../controllers/authController.js";
+// import express from "express";
+// import { Activate, ForgotPassword, Login, ResetPassword, Signup } from "../controllers/authController.js";
 
 
-const authRoutes = express.Router();
+// const authRoutes = express.Router();
 
-authRoutes.post("/signup", Signup);
+// authRoutes.post("/signup", Signup);
 
-authRoutes.patch("/activate", Activate);
+// authRoutes.patch("/activate", Activate);
 
-authRoutes.post("/login", Login);
+// authRoutes.post("/login", Login);
 
-authRoutes.patch("/forgot", ForgotPassword);
+// authRoutes.patch("/forgot", ForgotPassword);
 
-authRoutes.patch("/reset", ResetPassword);
+// authRoutes.patch("/reset", ResetPassword);
 
 
-// authRoutes.get("/logout", validateToken, Logout);
+// // authRoutes.get("/logout", validateToken, Logout);
 
-export default authRoutes;
+// export default authRoutes;
