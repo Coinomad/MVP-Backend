@@ -2,6 +2,7 @@ import { generateWallet } from "../helpers/createWallet.js";
 import { generateJwt } from "../helpers/generateJwt.js";
 import { sendEmail } from "../helpers/mailer.js";
 import {
+  employerSchema,
   resendTokenSchema,
   userSchema,
   userSchemaActivate,
@@ -21,7 +22,7 @@ import employerauthRoutes from "../routes/employerAuthRoutes.js";
 export const employerSignup = async (req, res) => {
   try {
     // Validate the data entered
-    const { error, value } = userSchema.validate(req.body);
+    const { error, value } = employerSchema.validate(req.body);
     if (error) {
       console.log(error.message);
       return res.status(400).json({
@@ -84,7 +85,7 @@ export const employerSignup = async (req, res) => {
   }
 };
 
-export const employerResendToken = async () => {
+export const employerResendToken = async (req, res) => {
   try {
     // Validation of data entered
     const { value, error } = resendTokenSchema.validate(req.body);
@@ -99,7 +100,7 @@ export const employerResendToken = async () => {
     const code = Math.floor(100000 + Math.random() * 900000);
     const expiry = Date.now() + 60 * 1000 * 15; // 15 mins in ms
 
-    const sendCode = await sendEmail(result.value.email, code);
+    const sendCode = await sendEmail(value.email, code);
     if (sendCode.error) {
       return res.status(500).json({
         success: false,

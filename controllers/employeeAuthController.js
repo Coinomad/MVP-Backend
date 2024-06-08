@@ -3,8 +3,8 @@ import { generateWallet } from "../helpers/createWallet.js";
 import { generateJwt } from "../helpers/generateJwt.js";
 import { sendEmail } from "../helpers/mailer.js";
 import {
+  employeeSchema,
   resendTokenSchema,
-  userSchema,
   userSchemaActivate,
   userSchemaForgotPassword,
   userSchemaLogin,
@@ -23,7 +23,7 @@ import { v4 as uuid } from "uuid";
 export const employeeSignup = async (req, res) => {
   try {
     // Validation of data entered
-    const { value, error } = userSchema.validate(req.body);
+    const { value, error } = employeeSchema.validate(req.body);
     if (error) {
       console.log(error.message);
       return res.status(400).json({
@@ -44,8 +44,10 @@ export const employeeSignup = async (req, res) => {
     }
 
     // Find employer by unique link
-    const { uniqueLink } = req.params;
-    const employer = await Employer.findOne({ uniqueLink });
+    const employer = await Employer.findOne({
+      uniqueLink: value.uniqueLink,
+      organizationName: value.organizationName,
+    });
     if (!employer) {
       return res.status(404).json({
         success: false,
@@ -62,7 +64,7 @@ export const employeeSignup = async (req, res) => {
     const code = Math.floor(100000 + Math.random() * 900000);
     const expiry = Date.now() + 60 * 1000 * 15; // 15 mins in ms
 
-    const sendCode = await sendEmail(result.value.email, code);
+    const sendCode = await sendEmail(value.email, code);
     if (sendCode.error) {
       return res.status(500).json({
         success: false,
@@ -95,7 +97,7 @@ export const employeeSignup = async (req, res) => {
   }
 };
 
-export const employerResendToken = async () => {
+export const employeeResendToken = async (req, res) => {
   try {
     // Validation of data entered
     const { value, error } = resendTokenSchema.validate(req.body);
@@ -110,7 +112,7 @@ export const employerResendToken = async () => {
     const code = Math.floor(100000 + Math.random() * 900000);
     const expiry = Date.now() + 60 * 1000 * 15; // 15 mins in ms
 
-    const sendCode = await sendEmail(result.value.email, code);
+    const sendCode = await sendEmail(value.email, code);
     if (sendCode.error) {
       return res.status(500).json({
         success: false,
@@ -180,7 +182,7 @@ export const employeeActivate = async (req, res) => {
         message: "Account already activated",
       });
     }
-    
+
     // Generate wallet
     const walletResult = await generateWallet();
     if (walletResult.error) {

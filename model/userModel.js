@@ -72,7 +72,6 @@ const employeeSchema = new Schema(
     privateKey: { type: String, default: null },
     walletAddress: { type: String, default: null },
     emailTokenExpires: { type: Date, default: null },
-
     employer: {
       type: Schema.Types.ObjectId,
       ref: "Employer",
