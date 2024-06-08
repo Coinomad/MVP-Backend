@@ -2,6 +2,7 @@ import { generateWallet } from "../helpers/createWallet.js";
 import { generateJwt } from "../helpers/generateJwt.js";
 import { sendEmail } from "../helpers/mailer.js";
 import {
+  resendTokenSchema,
   userSchema,
   userSchemaActivate,
   userSchemaForgotPassword,
@@ -15,6 +16,7 @@ import {
   hashPassword,
 } from "../model/userModel.js";
 import { v4 as uuid } from "uuid";
+import employerauthRoutes from "../routes/employerAuthRoutes.js";
 
 export const employerSignup = async (req, res) => {
   try {
@@ -81,6 +83,61 @@ export const employerSignup = async (req, res) => {
     });
   }
 };
+
+
+export const employerResendToken = async () => {
+  try {
+    // Validation of data entered
+    const { value, error } = resendTokenSchema.validate(req.body);
+    if (error) {
+      console.log(error.message);
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    const code = Math.floor(100000 + Math.random() * 900000);
+    const expiry = Date.now() + 60 * 1000 * 15; // 15 mins in ms
+
+    const sendCode = await sendEmail(result.value.email, code);
+    if (sendCode.error) {
+      return res.status(500).json({
+        success: false,
+        message: "Couldn't send verification email.",
+      });
+    }
+    // Find the user by email, token, and token expiry date
+    const employer = await Employer.findOne({
+      email: value.email,
+    });
+
+    if (!employer) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid account",
+      });
+    }
+    employer.emailToken = code;
+    employer.emailTokenExpires = new Date(expiry);
+
+    // Save the updated user to the database
+    await employer.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Token Sent",
+    });
+  } catch (error) {
+    console.error("signup-error", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error Occured",
+    });
+  }
+};
+
+
 
 // activate account
 export const employerActivate = async (req, res) => {

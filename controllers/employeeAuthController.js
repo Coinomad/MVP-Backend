@@ -1,7 +1,9 @@
+import { ConnectionCreatedEvent } from "mongodb";
 import { generateWallet } from "../helpers/createWallet.js";
 import { generateJwt } from "../helpers/generateJwt.js";
 import { sendEmail } from "../helpers/mailer.js";
 import {
+  resendTokenSchema,
   userSchema,
   userSchemaActivate,
   userSchemaForgotPassword,
@@ -76,11 +78,9 @@ export const employeeSignup = async (req, res) => {
     const newEmployee = new Employee(value);
     await newEmployee.save();
 
-
     // Add employee to employer's employee list
     employer.employees.push(newEmployee._id);
     await employer.save();
-
 
     return res.status(201).json({
       success: true,
@@ -91,6 +91,58 @@ export const employeeSignup = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Cannot Register",
+    });
+  }
+};
+
+export const employeeResendToken = async () => {
+  try {
+    // Validation of data entered
+    const { value, error } = resendTokenSchema.validate(req.body);
+    if (error) {
+      console.log(error.message);
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    const code = Math.floor(100000 + Math.random() * 900000);
+    const expiry = Date.now() + 60 * 1000 * 15; // 15 mins in ms
+
+    const sendCode = await sendEmail(result.value.email, code);
+    if (sendCode.error) {
+      return res.status(500).json({
+        success: false,
+        message: "Couldn't send verification email.",
+      });
+    }
+    // Find the user by email, token, and token expiry date
+    const employee = await Employee.findOne({
+      email: value.email,
+    });
+
+    if (!employee) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid account",
+      });
+    }
+    employee.emailToken = code;
+    employee.emailTokenExpires = new Date(expiry);
+
+    // Save the updated user to the database
+    await employee.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Token Sent",
+    });
+  } catch (error) {
+    console.error("signup-error", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error Occured",
     });
   }
 };
@@ -139,7 +191,7 @@ export const employeeActivate = async (req, res) => {
     }
 
     // Update user details
-    employee.emailToken = null;
+    employee.emailToken = "null";
     employee.emailTokenExpires = null;
     employee.active = true;
     employee.privateKey = walletResult.privateKey;
