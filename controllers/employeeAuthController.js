@@ -95,7 +95,7 @@ export const employeeSignup = async (req, res) => {
   }
 };
 
-export const employeeResendToken = async () => {
+export const employerResendToken = async () => {
   try {
     // Validation of data entered
     const { value, error } = resendTokenSchema.validate(req.body);
@@ -142,7 +142,7 @@ export const employeeResendToken = async () => {
     console.error("signup-error", error);
     return res.status(500).json({
       success: false,
-      message: "Error Occured",
+      message: "Error",
     });
   }
 };
@@ -157,15 +157,6 @@ export const employeeActivate = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: error.message,
-      });
-    }
-
-    // Generate wallet
-    const walletResult = await generateWallet();
-    if (walletResult.error) {
-      return res.status(400).json({
-        success: false,
-        message: walletResult.error.message,
       });
     }
 
@@ -187,6 +178,15 @@ export const employeeActivate = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Account already activated",
+      });
+    }
+    
+    // Generate wallet
+    const walletResult = await generateWallet();
+    if (walletResult.error) {
+      return res.status(400).json({
+        success: false,
+        message: walletResult.error.message,
       });
     }
 

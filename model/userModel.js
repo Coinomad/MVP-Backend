@@ -35,7 +35,7 @@ const employerSchema = new Schema(
     active: { type: Boolean, default: false },
     resetPasswordToken: { type: String, default: null },
     resetPasswordExpires: { type: Date, default: null },
-    emailToken: { type: String, required: true, default: null },
+    emailToken: { type: String, default: null },
     emailTokenExpires: { type: Date, default: null },
    
     uniqueLink: {
@@ -68,7 +68,7 @@ const employeeSchema = new Schema(
     active: { type: Boolean, default: false },
     resetPasswordToken: { type: String, default: null },
     resetPasswordExpires: { type: Date, default: null },
-    emailToken: { type: String, required: true, default: null },
+    emailToken: { type: String,  default: null },
     privateKey: { type: String, default: null },
     walletAddress: { type: String, default: null },
     emailTokenExpires: { type: Date, default: null },

@@ -84,7 +84,6 @@ export const employerSignup = async (req, res) => {
   }
 };
 
-
 export const employerResendToken = async () => {
   try {
     // Validation of data entered
@@ -137,8 +136,6 @@ export const employerResendToken = async () => {
   }
 };
 
-
-
 // activate account
 export const employerActivate = async (req, res) => {
   try {
@@ -149,15 +146,6 @@ export const employerActivate = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: error.message,
-      });
-    }
-
-    // Generate wallet
-    const walletResult = await generateWallet();
-    if (walletResult.error) {
-      return res.status(400).json({
-        success: false,
-        message: walletResult.error.message,
       });
     }
 
@@ -179,6 +167,15 @@ export const employerActivate = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Account already activated",
+      });
+    }
+    
+    // Generate wallet
+    const walletResult = await generateWallet();
+    if (walletResult.error) {
+      return res.status(400).json({
+        success: false,
+        message: walletResult.error.message,
       });
     }
 
