@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const options = {
-  expiresIn: "1h",
+  expiresIn: "10y",
 };
 
 export const generateJwt = async (email, userId) => {

@@ -27,17 +27,17 @@ const Schema = mongoose.Schema;
 const employerSchema = new Schema(
   {
     userId: { type: String, unique: true, required: true },
-    organizationName: { type: String, unique: true, required: true },
     email: { type: String, required: true, unique: true },
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
-    active: { type: Boolean, default: false },
+    organizationName: { type: String,  required: true },
     password: { type: String, required: true },
+    active: { type: Boolean, default: false },
     resetPasswordToken: { type: String, default: null },
     resetPasswordExpires: { type: Date, default: null },
     emailToken: { type: String, required: true, default: null },
     emailTokenExpires: { type: Date, default: null },
-    accessToken: { type: String, default: null },
+   
     uniqueLink: {
       type: String,
       required: true,
@@ -72,7 +72,7 @@ const employeeSchema = new Schema(
     privateKey: { type: String, default: null },
     walletAddress: { type: String, default: null },
     emailTokenExpires: { type: Date, default: null },
-    accessToken: { type: String, default: null },
+
     employer: {
       type: Schema.Types.ObjectId,
       ref: "Employer",
