@@ -2,27 +2,6 @@ import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 const Schema = mongoose.Schema;
 
-// const userSchema = new Schema(
-//   {
-//     userId: { type: String, unique: true, required: true },
-//     email: { type: String, required: true, unique: true },
-//     active: { type: Boolean, default: false },
-//     password: { type: String, required: true },
-//     resetPasswordToken: { type: String, default: null },
-//     resetPasswordExpires: { type: Date, default: null },
-//     emailToken: { type: String, required: true, default: null },
-//     privateKey: { type: String, default: null },
-//     walletAddress: { type: String, default: null },
-//     emailTokenExpires: { type: Date, default: null },
-//     accessToken: { type: String, default: null },
-//   },
-//   {
-//     timestamps: {
-//       createdAt: "createdAt",
-//       updatedAt: "updatedAt",
-//     },
-//   }
-// );
 
 const employerSchema = new Schema(
   {
@@ -88,7 +67,7 @@ const employeeSchema = new Schema(
 export const Employer = mongoose.model("Employer", employerSchema);
 export const Employee = mongoose.model("Employee", employeeSchema);
 
-// export const User = mongoose.model("user", userSchema);
+
 
 export const hashPassword = async (password) => {
   try {

@@ -1,6 +1,5 @@
 import express from "express";
 import dotenv from "dotenv";
-// import authRoutesRouter from "./routes/authRoutes.js";
 import ExpressMongoSanitize from "express-mongo-sanitize";
 import { notFoundMiddleware } from "./middleware/notFoundMiddleware.js";
 import mongoose from "mongoose";
@@ -25,8 +24,7 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((error) => console.error("Connection error"));
 
-// /v1/api/auth/
-// app.use("/v1/api/auth", authRoutesRouter);
+
 
 // /v1/api/employeeauth
 app.use("/v1/api/employeeauth", employeeauthRoutes);
