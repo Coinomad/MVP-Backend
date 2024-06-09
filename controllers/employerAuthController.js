@@ -39,6 +39,17 @@ export const employerSignup = async (req, res) => {
         message: "Email is already in use",
       });
     }
+    
+  // Check if organization name is already in use
+  const existingorganizationname = await Employer.findOne({ 
+    organizationName: value.organizationName });
+  if (existingorganizationname) {
+    return res.status(400).json({
+      success: false,
+      message: "organization name is already in use",
+    });
+  }
+
 
     // Hash the password
     const hashedPassword = await hashPassword(value.password);
