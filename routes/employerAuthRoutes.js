@@ -1,20 +1,24 @@
 import express from "express";
 import {
-  employerActivate,
+  employerDetails,
+  employerEmailSignup,
   employerForgotPassword,
   employerLogin,
   employerResendToken,
   employerResetPassword,
-  employerSignup,
+  employerVerfiyEmailSignup,
 } from "../controllers/employerAuthController.js";
 
 const employerauthRoutes = express.Router();
 
-employerauthRoutes.post("/signup", employerSignup);
 
-employerauthRoutes.post("/resendtoken", employerResendToken);
+employerauthRoutes.post("/signup/email", employerEmailSignup);
 
-employerauthRoutes.patch("/activate", employerActivate);
+employerauthRoutes.post("/signup/verify-email", employerVerfiyEmailSignup);
+
+employerauthRoutes.post("/signup/resend-token", employerResendToken);
+
+employerauthRoutes.post("/signup/employer-details", employerDetails);
 
 employerauthRoutes.post("/login", employerLogin);
 

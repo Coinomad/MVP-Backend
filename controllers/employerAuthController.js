@@ -2,7 +2,10 @@ import { generateWallet } from "../helpers/createWallet.js";
 import { generateJwt } from "../helpers/generateJwt.js";
 import { sendEmail } from "../helpers/mailer.js";
 import {
+  employerDetailsSchema,
+  employerEmailSchema,
   employerSchema,
+  employerVerfiyEmailSchema,
   resendTokenSchema,
   userSchema,
   userSchemaActivate,
@@ -19,10 +22,81 @@ import {
 import { v4 as uuid } from "uuid";
 import employerauthRoutes from "../routes/employerAuthRoutes.js";
 
-export const employerSignup = async (req, res) => {
+// export const employerSignup = async (req, res) => {
+//   try {
+//     // Validate the data entered
+//     const { error, value } = employerSchema.validate(req.body);
+//     if (error) {
+//       console.log(error.message);
+//       return res.status(400).json({
+//         success: false,
+//         message: error.message,
+//       });
+//     }
+
+//     // Check if email is already in use
+//     const existingemployer = await Employer.findOne({ email: value.email });
+//     if (existingemployer) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Email is already in use",
+//       });
+//     }
+
+//     // Check if organization name is already in use
+//     const existingorganizationname = await Employer.findOne({
+//       organizationName: value.organizationName,
+//     });
+//     if (existingorganizationname) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "organization name is already in use",
+//       });
+//     }
+
+//     // Generate email verification code
+//     const verificationCode = Math.floor(100000 + Math.random() * 900000);
+//     const codeExpiry = Date.now() + 60 * 1000 * 15; // 15 mins in milliseconds
+
+//     // Send verification email
+//     const emailResult = await sendEmail(value.email, verificationCode);
+//     if (emailResult.error) {
+//       return res.status(500).json({
+//         success: false,
+//         message: "Couldn't send verification email.",
+//       });
+//     }
+
+//     // Store the verification code and its expiry
+//     value.emailToken = verificationCode;
+//     value.emailTokenExpires = new Date(codeExpiry);
+
+//     // Create a new employer
+//     const newEmployer = new Employer({
+//       ...value,
+//       uniqueLink: uuid(),
+//     });
+
+//     await newEmployer.save();
+
+//     return res.status(201).json({
+//       success: true,
+//       message: "User registered successfully",
+//     });
+//   } catch (error) {
+//     console.error("signup-error", error);
+//     return res.status(500).json({
+//       success: false,
+//       message: "Cannot Register",
+//     });
+//   }
+// };
+
+export const employerEmailSignup = async (req, res) => {
   try {
     // Validate the data entered
-    const { error, value } = employerSchema.validate(req.body);
+    const { error, value } = employerEmailSchema.validate(req.body)
+
     if (error) {
       console.log(error.message);
       return res.status(400).json({
@@ -39,28 +113,11 @@ export const employerSignup = async (req, res) => {
         message: "Email is already in use",
       });
     }
-    
-  // Check if organization name is already in use
-  const existingorganizationname = await Employer.findOne({ 
-    organizationName: value.organizationName });
-  if (existingorganizationname) {
-    return res.status(400).json({
-      success: false,
-      message: "organization name is already in use",
-    });
-  }
-
-
-    // Hash the password
-    const hashedPassword = await hashPassword(value.password);
-    const userId = uuid(); // Generate unique ID for the user
-    value.userId = userId;
-    delete value.confirmPassword;
-    value.password = hashedPassword;
 
     // Generate email verification code
     const verificationCode = Math.floor(100000 + Math.random() * 900000);
     const codeExpiry = Date.now() + 60 * 1000 * 15; // 15 mins in milliseconds
+
 
     // Send verification email
     const emailResult = await sendEmail(value.email, verificationCode);
@@ -96,62 +153,10 @@ export const employerSignup = async (req, res) => {
   }
 };
 
-export const employerResendToken = async (req, res) => {
+
+export const employerVerfiyEmailSignup = async (req, res) => {
   try {
-    // Validation of data entered
-    const { value, error } = resendTokenSchema.validate(req.body);
-    if (error) {
-      console.log(error.message);
-      return res.status(400).json({
-        success: false,
-        message: error.message,
-      });
-    }
-
-    const code = Math.floor(100000 + Math.random() * 900000);
-    const expiry = Date.now() + 60 * 1000 * 15; // 15 mins in ms
-
-    const sendCode = await sendEmail(value.email, code);
-    if (sendCode.error) {
-      return res.status(500).json({
-        success: false,
-        message: "Couldn't send verification email.",
-      });
-    }
-    // Find the user by email, token, and token expiry date
-    const employer = await Employer.findOne({
-      email: value.email,
-    });
-
-    if (!employer) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid account",
-      });
-    }
-    employer.emailToken = code;
-    employer.emailTokenExpires = new Date(expiry);
-
-    // Save the updated user to the database
-    await employer.save();
-
-    return res.status(200).json({
-      success: true,
-      message: "Token Sent",
-    });
-  } catch (error) {
-    console.error("signup-error", error);
-    return res.status(500).json({
-      success: false,
-      message: "Error Occured",
-    });
-  }
-};
-
-// activate account
-export const employerActivate = async (req, res) => {
-  try {
-    // Validate the request body
+    // Validate the data entered
     const { error, value } = userSchemaActivate.validate(req.body);
     if (error) {
       console.log(error.message);
@@ -181,22 +186,11 @@ export const employerActivate = async (req, res) => {
         message: "Account already activated",
       });
     }
-    
-    // Generate wallet
-    const walletResult = await generateWallet();
-    if (walletResult.error) {
-      return res.status(400).json({
-        success: false,
-        message: walletResult.error.message,
-      });
-    }
 
     // Update user details
     employer.emailToken = null;
     employer.emailTokenExpires = null;
     employer.active = true;
-    employer.privateKey = walletResult.privateKey;
-    employer.walletAddress = walletResult.walletAddress;
 
     // Save the updated user to the database
     await employer.save();
@@ -206,13 +200,136 @@ export const employerActivate = async (req, res) => {
       message: "Account activated",
     });
   } catch (error) {
-    console.error("activation-error", error);
+    console.error("signup-error", error);
     return res.status(500).json({
       success: false,
-      message: "An error occurred while activating the account",
+      message: "Cannot Register",
     });
   }
 };
+
+
+
+
+export const employerResendToken = async (req, res) => {
+  try {
+    // Validation of data entered
+    const { value, error } = resendTokenSchema.validate(req.body);
+    if (error) {
+      console.log(error.message);
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    const code = Math.floor(100000 + Math.random() * 900000);
+    const expiry = Date.now() + 60 * 1000 * 15; // 15 mins in ms
+    const sendCode = await sendEmail(value.email, code);
+
+    if (sendCode.error) {
+      return res.status(500).json({
+        success: false,
+        message: "Couldn't send verification email.",
+      });
+    }
+
+    // Find the user by email, token, and token expiry date
+    const employer = await Employer.findOne({
+      email: value.email,
+    });
+
+    if (!employer) {
+      return res.status(404).json({
+        success: false,
+        message: "Invalid account",
+      });
+    }
+
+    // Update user details
+    employer.emailToken = code;
+    employer.emailTokenExpires = new Date(expiry);
+
+    // Save the updated user to the database
+    await employer.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Token Sent",
+    });
+  } catch (error) {
+    console.error("signup-error", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error Occured",
+    });
+  }
+};
+
+
+
+export const employerDetails = async (req, res) => {
+  try {
+    // Validate the data entered
+    const { error, value } = employerDetailsSchema.validate(req.body);
+
+    if (error) {
+      console.log(error.message);
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    // Check if email or organization name is already in use
+    const [employerByEmail, employerByOrgName] = await Promise.all([
+      Employer.findOne({ email }),
+      Employer.findOne({ organizationName }),
+    ]);
+
+
+    // Check if email is not registered
+    if (!employerByEmail) {
+      return res.status(404).json({
+        success: false,
+        message: "Email is not registered",
+      });
+    }
+
+
+    // Check if organization name is already in use
+    if (employerByOrgName) {
+      return res.status(400).json({
+        success: false,
+        message: "Organization name is already in use",
+      });
+    }
+
+    // Hash the password
+    const hashedPassword = await hashPassword(value.password);
+    employerByEmail.firstName = value.firstName;
+    employerByEmail.lastName = value.lastName;
+    employerByEmail.employerByOrgName = value.employerByOrgName;
+    employerByEmail.password = hashedPassword;
+
+    // Save the changes
+    await employerByEmail.save();
+
+    return res.status(201).json({
+      success: true,
+      message: "User Details registered successfully",
+    });
+  } catch (error) {
+    console.error("signup-error", error);
+    return res.status(500).json({
+      success: false,
+      message: "Cannot Register",
+    });
+  }
+};
+
+
+
 
 export const employerLogin = async (req, res) => {
   try {
@@ -225,8 +342,11 @@ export const employerLogin = async (req, res) => {
       });
     }
 
+    
+
     // Find the employer by email
     const employer = await Employer.findOne({ email: value.email });
+
 
     // If employer is not found, return an error
     if (!employer) {
@@ -236,6 +356,7 @@ export const employerLogin = async (req, res) => {
       });
     }
 
+
     // If the account is not activated, return an error
     if (!employer.active) {
       return res.status(400).json({
@@ -243,6 +364,7 @@ export const employerLogin = async (req, res) => {
         message: "You must verify your email to activate your account",
       });
     }
+
 
     // Verify the password
     const isPasswordValid = await comparePasswords(
@@ -261,6 +383,8 @@ export const employerLogin = async (req, res) => {
       employer.email,
       employer.userId
     );
+
+    
     if (tokenError) {
       return res.status(500).json({
         success: false,
@@ -343,6 +467,8 @@ export const employerForgotPassword = async (req, res) => {
     });
   }
 };
+
+
 
 export const employerResetPassword = async (req, res) => {
   try {
