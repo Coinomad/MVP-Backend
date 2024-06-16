@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        background-color: #ffffff;
+        margin: 50px auto;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        max-width: 600px;
+      }
+      .header {
+        background-color: #4CAF50;
+        padding: 10px 20px;
+        border-radius: 10px 10px 0 0;
+        color: #ffffff;
+        text-align: center;
+      }
+      .content {
+        padding: 20px;
+        text-align: center;
+      }
+      .code {
+        font-size: 24px;
+        font-weight: bold;
+        color: #4CAF50;
+        margin: 20px 0;
+      }
+      .footer {
+        background-color: #4CAF50;
+        padding: 10px 20px;
+        border-radius: 0 0 10px 10px;
+        color: #ffffff;
+        text-align: center;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Email Verification</h1>
+      </div>
+      <div class="content">
+        <p>Your authentication code is:</p>
+        <div class="code">{{code}}</div>
+        <p>Please enter this code in the app to verify your email address.</p>
+      </div>
+      <div class="footer">
+        <p>Thank you for using our service!</p>
+      </div>
+    </div>
+  </body>
+</html>
