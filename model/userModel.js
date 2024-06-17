@@ -1,22 +1,33 @@
 import mongoose from "mongoose";
+import crypto from "crypto";
 import bcrypt from "bcryptjs";
-const Schema = mongoose.Schema;
+import dotenv from "dotenv";
+import cryptoJs from "crypto-js";
 
+dotenv.config();
+
+const Schema = mongoose.Schema;
 
 const employerSchema = new Schema(
   {
     userId: { type: String, unique: true, required: true },
     email: { type: String, required: true, unique: true },
-    firstName: { type: String, required: true },
-    lastName: { type: String, required: true },
-    organizationName: { type: String,  unique: true, required: true },
-    password: { type: String, required: true },
+    firstName: { type: String, required: true, default: "nil" },
+    lastName: { type: String, required: true, default: "nil" },
+    organizationName: {
+      type: String,
+      unique: true,
+      required: true,
+      default: "nil",
+    },
+    password: { type: String, required: true, default: "nil" },
     active: { type: Boolean, default: false },
     resetPasswordToken: { type: String, default: null },
     resetPasswordExpires: { type: Date, default: null },
     emailToken: { type: String, default: null },
     emailTokenExpires: { type: Date, default: null },
-   
+    privateKey: { type: String, default: null },
+    walletAddress: { type: String, default: null },
     uniqueLink: {
       type: String,
       required: true,
@@ -47,7 +58,7 @@ const employeeSchema = new Schema(
     active: { type: Boolean, default: false },
     resetPasswordToken: { type: String, default: null },
     resetPasswordExpires: { type: Date, default: null },
-    emailToken: { type: String,  default: null },
+    emailToken: { type: String, default: null },
     privateKey: { type: String, default: null },
     walletAddress: { type: String, default: null },
     emailTokenExpires: { type: Date, default: null },
@@ -67,8 +78,6 @@ const employeeSchema = new Schema(
 export const Employer = mongoose.model("Employer", employerSchema);
 export const Employee = mongoose.model("Employee", employeeSchema);
 
-
-
 export const hashPassword = async (password) => {
   try {
     const salt = await bcrypt.genSalt(10);
@@ -83,5 +92,30 @@ export const comparePasswords = async (inputPassword, hashedPassword) => {
     return await bcrypt.compare(inputPassword, hashedPassword);
   } catch (error) {
     throw new Error("Comparison failed", error);
+  }
+};
+
+// Generate a random key and initialization vector (IV)
+const algorithm = "aes-256-cbc";
+console.log("process.env.ENCRYPTION_KEY", process.env.ENCRYPTION_KEY);
+const key = process.env.ENCRYPTION_KEY;
+
+export const encrypt = (text) => {
+  const cipherText = cryptoJs.AES.encrypt(text, key).toString();
+ 
+  return cipherText;
+};
+
+export const decrypt = (encryptedText) => {
+  try {
+    const bytes = cryptoJs.AES.decrypt(encryptedText, key);
+    if (bytes.sigBytes > 0) {
+      const decryptedData = bytes.toString(cryptoJs.enc.Utf8);
+      return decryptedData;
+    } else {
+      throw new Error("Decryption Failed Invalid Key");
+    }
+  } catch (error) {
+    throw new Error("Decryption Failed Invalid Key", error);
   }
 };

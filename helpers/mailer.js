@@ -5,7 +5,7 @@ dotenv.config();
 
 export const  sendEmail=async(email, code)=> {
   try {
-    const smtpEndpoint = "smtp.gmail.com";
+    const smtpEndpoint = "sandbox.smtp.mailtrap.io";
 
     const port = 587 ;
 
@@ -13,7 +13,7 @@ export const  sendEmail=async(email, code)=> {
 
     var toAddress = email;
 
-    const smtpUsername = "olaimarnoel@gmail.com";
+    const smtpUsername = "bf3b86ad1c8d89";
 
     const smtpPassword = process.env.SMTP_APIKEY;
 

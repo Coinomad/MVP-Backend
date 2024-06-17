@@ -26,9 +26,9 @@ export const employerVerfiyEmailSchema = Joi.object().keys({
 
 export const employerDetailsSchema = Joi.object().keys({
   email: Joi.string().required().email({ minDomainSegments: 2 }),
-  password: Joi.string().required().email({ minDomainSegments: 2 }),
-  firstName: Joi.string().required().min(8),
-  lastName: Joi.string().required().min(8),
+  password: Joi.string().required().min(8),
+  firstName: Joi.string().required(),
+  lastName: Joi.string().required(),
   organizationName: Joi.string().required(),
 });
 

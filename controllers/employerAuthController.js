@@ -1,4 +1,4 @@
-import { generateWallet } from "../helpers/createWallet.js";
+import { generateWallet, getWalletBalance } from "../helpers/createWallet.js";
 import { generateJwt } from "../helpers/generateJwt.js";
 import { sendEmail } from "../helpers/mailer.js";
 import {
@@ -16,86 +16,18 @@ import {
 } from "../helpers/validation.js";
 import {
   comparePasswords,
+  decrypt,
   Employer,
+  encrypt,
   hashPassword,
 } from "../model/userModel.js";
 import { v4 as uuid } from "uuid";
 import employerauthRoutes from "../routes/employerAuthRoutes.js";
 
-// export const employerSignup = async (req, res) => {
-//   try {
-//     // Validate the data entered
-//     const { error, value } = employerSchema.validate(req.body);
-//     if (error) {
-//       console.log(error.message);
-//       return res.status(400).json({
-//         success: false,
-//         message: error.message,
-//       });
-//     }
-
-//     // Check if email is already in use
-//     const existingemployer = await Employer.findOne({ email: value.email });
-//     if (existingemployer) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Email is already in use",
-//       });
-//     }
-
-//     // Check if organization name is already in use
-//     const existingorganizationname = await Employer.findOne({
-//       organizationName: value.organizationName,
-//     });
-//     if (existingorganizationname) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "organization name is already in use",
-//       });
-//     }
-
-//     // Generate email verification code
-//     const verificationCode = Math.floor(100000 + Math.random() * 900000);
-//     const codeExpiry = Date.now() + 60 * 1000 * 15; // 15 mins in milliseconds
-
-//     // Send verification email
-//     const emailResult = await sendEmail(value.email, verificationCode);
-//     if (emailResult.error) {
-//       return res.status(500).json({
-//         success: false,
-//         message: "Couldn't send verification email.",
-//       });
-//     }
-
-//     // Store the verification code and its expiry
-//     value.emailToken = verificationCode;
-//     value.emailTokenExpires = new Date(codeExpiry);
-
-//     // Create a new employer
-//     const newEmployer = new Employer({
-//       ...value,
-//       uniqueLink: uuid(),
-//     });
-
-//     await newEmployer.save();
-
-//     return res.status(201).json({
-//       success: true,
-//       message: "User registered successfully",
-//     });
-//   } catch (error) {
-//     console.error("signup-error", error);
-//     return res.status(500).json({
-//       success: false,
-//       message: "Cannot Register",
-//     });
-//   }
-// };
-
 export const employerEmailSignup = async (req, res) => {
   try {
     // Validate the data entered
-    const { error, value } = employerEmailSchema.validate(req.body)
+    const { error, value } = employerEmailSchema.validate(req.body);
 
     if (error) {
       console.log(error.message);
@@ -118,7 +50,6 @@ export const employerEmailSignup = async (req, res) => {
     const verificationCode = Math.floor(100000 + Math.random() * 900000);
     const codeExpiry = Date.now() + 60 * 1000 * 15; // 15 mins in milliseconds
 
-
     // Send verification email
     const emailResult = await sendEmail(value.email, verificationCode);
     if (emailResult.error) {
@@ -127,6 +58,10 @@ export const employerEmailSignup = async (req, res) => {
         message: "Couldn't send verification email.",
       });
     }
+
+    // Generate unique ID for the user
+    const userId = uuid();
+    value.userId = userId;
 
     // Store the verification code and its expiry
     value.emailToken = verificationCode;
@@ -152,7 +87,6 @@ export const employerEmailSignup = async (req, res) => {
     });
   }
 };
-
 
 export const employerVerfiyEmailSignup = async (req, res) => {
   try {
@@ -207,9 +141,6 @@ export const employerVerfiyEmailSignup = async (req, res) => {
     });
   }
 };
-
-
-
 
 export const employerResendToken = async (req, res) => {
   try {
@@ -266,8 +197,6 @@ export const employerResendToken = async (req, res) => {
   }
 };
 
-
-
 export const employerDetails = async (req, res) => {
   try {
     // Validate the data entered
@@ -283,10 +212,9 @@ export const employerDetails = async (req, res) => {
 
     // Check if email or organization name is already in use
     const [employerByEmail, employerByOrgName] = await Promise.all([
-      Employer.findOne({ email }),
-      Employer.findOne({ organizationName }),
+      Employer.findOne({ email: value.email }),
+      Employer.findOne({ organizationName: value.organizationName }),
     ]);
-
 
     // Check if email is not registered
     if (!employerByEmail) {
@@ -296,7 +224,6 @@ export const employerDetails = async (req, res) => {
       });
     }
 
-
     // Check if organization name is already in use
     if (employerByOrgName) {
       return res.status(400).json({
@@ -305,12 +232,26 @@ export const employerDetails = async (req, res) => {
       });
     }
 
+    // Generate wallet
+    const walletResult = await generateWallet();
+    if (walletResult.error) {
+      return res.status(400).json({
+        success: false,
+        message: walletResult.error.message,
+      });
+    }
+
     // Hash the password
     const hashedPassword = await hashPassword(value.password);
+
+    // hash private key
+    const encryptPrivateKey = await encrypt(walletResult.privateKey);
     employerByEmail.firstName = value.firstName;
     employerByEmail.lastName = value.lastName;
-    employerByEmail.employerByOrgName = value.employerByOrgName;
+    employerByEmail.organizationName = value.organizationName;
     employerByEmail.password = hashedPassword;
+    employerByEmail.privateKey = encryptPrivateKey;
+    employerByEmail.walletAddress = walletResult.walletAddress;
 
     // Save the changes
     await employerByEmail.save();
@@ -328,9 +269,6 @@ export const employerDetails = async (req, res) => {
   }
 };
 
-
-
-
 export const employerLogin = async (req, res) => {
   try {
     // Validate the request body
@@ -342,12 +280,8 @@ export const employerLogin = async (req, res) => {
       });
     }
 
-    
-
     // Find the employer by email
     const employer = await Employer.findOne({ email: value.email });
-
-
     // If employer is not found, return an error
     if (!employer) {
       return res.status(404).json({
@@ -356,7 +290,6 @@ export const employerLogin = async (req, res) => {
       });
     }
 
-
     // If the account is not activated, return an error
     if (!employer.active) {
       return res.status(400).json({
@@ -364,7 +297,6 @@ export const employerLogin = async (req, res) => {
         message: "You must verify your email to activate your account",
       });
     }
-
 
     // Verify the password
     const isPasswordValid = await comparePasswords(
@@ -384,7 +316,6 @@ export const employerLogin = async (req, res) => {
       employer.userId
     );
 
-    
     if (tokenError) {
       return res.status(500).json({
         success: false,
@@ -396,11 +327,33 @@ export const employerLogin = async (req, res) => {
     employer.accessToken = token;
     await employer.save();
 
+    const walletBalance = await getWalletBalance(employer.walletAddress);
+    console.log("walletBalance", walletBalance);
+    if (walletBalance.error) {
+      return res.status(500).json({
+        success: false,
+        message: "Couldn't get wallet balance. Please try again later",
+      });
+    }
+
+    // DecyrptedPrivateKey
+    const decryptedPrivateKey = await decrypt(employer.privateKey);
+
     // Return success response
     return res.status(200).json({
       success: true,
       message: "Employer logged in successfully",
-      accessToken: token,
+      data: {
+        accessToken: token,
+        email: employer.email,
+        firstName: employer.firstName,
+        lastName: employer.lastName,
+        organizationName: employer.organizationName,
+        walletBalance: walletBalance,
+        walletAddress: employer.walletAddress,
+        privateKey: decryptedPrivateKey,
+        uniqueLink: employer.uniqueLink
+      },
     });
   } catch (err) {
     console.error("Login error", err);
@@ -468,8 +421,6 @@ export const employerForgotPassword = async (req, res) => {
   }
 };
 
-
-
 export const employerResetPassword = async (req, res) => {
   try {
     // Validate the request body
@@ -519,42 +470,42 @@ export const employerResetPassword = async (req, res) => {
   }
 };
 
-export const employerLogout = async (req, res) => {
-  try {
-    // Validate the request body
-    const { error, value } = userSchemaLogout.validate(req.body);
-    if (error) {
-      return res.status(400).json({
-        success: false,
-        message: error.message,
-      });
-    }
+// export const employerLogout = async (req, res) => {
+//   try {
+//     // Validate the request body
+//     const { error, value } = userSchemaLogout.validate(req.body);
+//     if (error) {
+//       return res.status(400).json({
+//         success: false,
+//         message: error.message,
+//       });
+//     }
 
-    // Find the employer by user ID
-    const employer = await Employer.findOne({ userId: value.id });
-    if (!employer) {
-      return res.status(404).json({
-        success: false,
-        message: "Employer not found",
-      });
-    }
+//     // Find the employer by user ID
+//     const employer = await Employer.findOne({ userId: value.id });
+//     if (!employer) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Employer not found",
+//       });
+//     }
 
-    // Clear the access token
-    employer.accessToken = "";
-    employer.markModified("accessToken");
-    // Save the changes
-    await employer.save();
+//     // Clear the access token
+//     employer.accessToken = "";
 
-    // Return success response
-    return res.status(200).json({
-      success: true,
-      message: "Employer logged out successfully",
-    });
-  } catch (error) {
-    console.error("employer-logout-error:", error);
-    return res.status(500).json({
-      success: false,
-      message: "An error occurred while processing your request",
-    });
-  }
-};
+//     // Save the changes
+//     await employer.save();
+
+//     // Return success response
+//     return res.status(200).json({
+//       success: true,
+//       message: "Employer logged out successfully",
+//     });
+//   } catch (error) {
+//     console.error("employer-logout-error:", error);
+//     return res.status(500).json({
+//       success: false,
+//       message: "An error occurred while processing your request",
+//     });
+//   }
+// };

@@ -1,5 +1,5 @@
 import { ConnectionCreatedEvent } from "mongodb";
-import { generateWallet } from "../helpers/createWallet.js";
+import { generateWallet, getWalletBalance } from "../helpers/createWallet.js";
 import { generateJwt } from "../helpers/generateJwt.js";
 import { sendEmail } from "../helpers/mailer.js";
 import {
@@ -13,9 +13,13 @@ import {
 } from "../helpers/validation.js";
 import {
   comparePasswords,
+  decrypt,
   Employee,
   Employer,
+  encrypt,
   hashPassword,
+  
+
   // User,
 } from "../model/userModel.js";
 import { v4 as uuid } from "uuid";
@@ -191,12 +195,13 @@ export const employeeActivate = async (req, res) => {
         message: walletResult.error.message,
       });
     }
-
+    // hash private key
+    const encryptPrivateKey = await encrypt(walletResult.privateKey);
     // Update user details
     employee.emailToken = "null";
     employee.emailTokenExpires = null;
     employee.active = true;
-    employee.privateKey = walletResult.privateKey;
+    employee.privateKey = encryptPrivateKey;
     employee.walletAddress = walletResult.walletAddress;
 
     // Save the updated user to the database
@@ -273,11 +278,31 @@ export const employeeLogin = async (req, res) => {
     employee.accessToken = token;
     await employee.save();
 
+    // Get wallet Balance
+    const walletBalance = await getWalletBalance(employee.walletAddress);
+    if (walletBalance.error) {
+      return res.status(500).json({
+        success: false,
+        message: "Couldn't get wallet balance. Please try again later",
+      });
+    }
+
+    // DecyrptedPrivateKey
+    const decryptedPrivateKey = decrypt(employee.privateKey, key, iv);
+
     // Return success response
     return res.status(200).json({
       success: true,
       message: "Employee logged in successfully",
-      accessToken: token,
+      data: {
+        accessToken: token,
+        email: employee.email,
+        firstName: employee.firstName,
+        lastName: employee.lastName,
+        walletBalance: walletBalance.balance,
+        walletAddress: employee.walletAddress,
+        privateKey: decryptedPrivateKey,
+      },
     });
   } catch (err) {
     console.error("Login error", err);

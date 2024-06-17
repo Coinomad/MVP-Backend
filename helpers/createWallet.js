@@ -34,3 +34,16 @@ export const generateWallet = async (req, res) => {
     };
   }
 };
+
+
+
+export const getWalletBalance = async (address) => {
+  try {
+    const walletResponse = await axios.get(`/address/balance/${address}`);
+    return walletResponse.data
+  } catch (error) {
+    return {
+      error: { message: error },
+    };
+  }
+};
