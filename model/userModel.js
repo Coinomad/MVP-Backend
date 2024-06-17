@@ -16,7 +16,6 @@ const employerSchema = new Schema(
     lastName: { type: String, required: true, default: "nil" },
     organizationName: {
       type: String,
-      unique: true,
       required: true,
       default: "nil",
     },
