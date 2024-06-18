@@ -96,7 +96,6 @@ export const comparePasswords = async (inputPassword, hashedPassword) => {
 
 // Generate a random key and initialization vector (IV)
 const algorithm = "aes-256-cbc";
-console.log("process.env.ENCRYPTION_KEY", process.env.ENCRYPTION_KEY);
 const key = process.env.ENCRYPTION_KEY;
 
 export const encrypt = (text) => {

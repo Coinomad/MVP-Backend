@@ -5,15 +5,17 @@ dotenv.config();
 
 export const  sendEmail=async(email, code)=> {
   try {
-    const smtpEndpoint = "sandbox.smtp.mailtrap.io";
+    const smtpEndpoint = "smtp.gmail.com";
 
     const port = 587 ;
+
+    const service="Gmail";
 
     const senderAddress = "olaimarnoel@gmail.com";
 
     var toAddress = email;
 
-    const smtpUsername = "bf3b86ad1c8d89";
+    const smtpUsername = process.env.SMTP_USERNAME;
 
     const smtpPassword = process.env.SMTP_APIKEY;
 
@@ -29,6 +31,7 @@ export const  sendEmail=async(email, code)=> {
 
     // Create the SMTP transport.
     let transporter = nodemailer.createTransport({
+      service,
       host: smtpEndpoint,
       port: port,
       secure: false,  // true for 465, false for other ports
