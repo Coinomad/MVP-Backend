@@ -1,5 +1,8 @@
 import { ConnectionCreatedEvent } from "mongodb";
-import { generateWallet, getWalletBalance } from "../helpers/createWallet.js";
+import {
+  generateBTCWallet,
+  getWalletBTCBalance,
+} from "../helpers/wallets/btcWallet.js";
 import { generateJwt } from "../helpers/generateJwt.js";
 import { sendEmail } from "../helpers/mailer.js";
 import {
@@ -12,16 +15,18 @@ import {
   userSchemaResetPassword,
 } from "../helpers/validation.js";
 import {
-  comparePasswords,
-  decrypt,
   Employee,
   Employer,
-  encrypt,
-  hashPassword,
-  
 
   // User,
 } from "../model/userModel.js";
+
+import {
+  hashPassword,
+  comparePasswords,
+  decrypt,
+  encrypt,
+} from "../helpers/helpers.js";
 import { v4 as uuid } from "uuid";
 
 export const employeeSignup = async (req, res) => {
@@ -123,6 +128,7 @@ export const employeeResendToken = async (req, res) => {
         message: "Couldn't send verification email.",
       });
     }
+
     // Find the user by email, token, and token expiry date
     const employee = await Employee.findOne({
       email: value.email,
@@ -188,7 +194,7 @@ export const employeeActivate = async (req, res) => {
     }
 
     // Generate wallet
-    const walletResult = await generateWallet();
+    const walletResult = await generateBTCWallet();
     if (walletResult.error) {
       return res.status(400).json({
         success: false,
@@ -279,7 +285,7 @@ export const employeeLogin = async (req, res) => {
     await employee.save();
 
     // Get wallet Balance
-    const walletBalance = await getWalletBalance(employee.walletAddress);
+    const walletBalance = await getWalletBTCBalance(employee.walletAddress);
     if (walletBalance.error) {
       return res.status(500).json({
         success: false,
