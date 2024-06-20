@@ -1,4 +1,4 @@
-import { generateWallet, getWalletBalance } from "../helpers/createWallet.js";
+import { generateBTCWallet, getWalletBTCBalance } from "../helpers/wallets/btcWallet.js";
 import { generateJwt } from "../helpers/generateJwt.js";
 import { sendEmail } from "../helpers/mailer.js";
 import {
@@ -15,14 +15,13 @@ import {
   userSchemaResetPassword,
 } from "../helpers/validation.js";
 import {
-  comparePasswords,
-  decrypt,
+  
   Employer,
-  encrypt,
-  hashPassword,
+ 
 } from "../model/userModel.js";
 import { v4 as uuid } from "uuid";
 import employerauthRoutes from "../routes/employerAuthRoutes.js";
+import { hashPassword, comparePasswords,decrypt,encrypt } from "../helpers/helpers.js";
 
 export const employerEmailSignup = async (req, res) => {
   try {
@@ -233,7 +232,7 @@ export const employerDetails = async (req, res) => {
     }
 
     // Generate wallet
-    const walletResult = await generateWallet();
+    const walletResult = await generateBTCWallet();
     if (walletResult.error) {
       return res.status(400).json({
         success: false,
@@ -327,7 +326,7 @@ export const employerLogin = async (req, res) => {
     employer.accessToken = token;
     await employer.save();
 
-    const walletBalance = await getWalletBalance(employer.walletAddress);
+    const walletBalance = await getWalletBTCBalance(employer.walletAddress);
     console.log("walletBalance", walletBalance);
     if (walletBalance.error) {
       return res.status(500).json({
