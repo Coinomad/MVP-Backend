@@ -27,6 +27,8 @@ const employerSchema = new Schema(
     emailTokenExpires: { type: Date, default: null },
     privateKey: { type: String, default: null },
     walletAddress: { type: String, default: null },
+    btcBalance: { type: Number, required: true, default: 0 },
+    polygonBalance: { type: Number, required: true, default: 0 },
     uniqueLink: {
       type: String,
       required: true,
@@ -36,6 +38,12 @@ const employerSchema = new Schema(
       {
         type: Schema.Types.ObjectId,
         ref: "Employee",
+      },
+    ],
+    transactions: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Transaction",
       },
     ],
   },
@@ -65,6 +73,38 @@ const employeeSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Employer",
     },
+    btcBalance: { type: Number, required: true, default: 0 },
+    polygonBalance: { type: Number, required: true, default: 0 },
+    transactions: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Transaction",
+      },
+    ],
+  },
+  {
+    timestamps: {
+      createdAt: "createdAt",
+      updatedAt: "updatedAt",
+    },
+  }
+);
+
+const transactionSchema = new Schema(
+  {
+    employer: {
+      type: Schema.Types.ObjectId,
+      ref: "Employer",
+      required: true,
+    },
+    employee: {
+      type: Schema.Types.ObjectId,
+      ref: "Employee",
+      required: true,
+    },
+    amount: { type: Number, required: true },
+    walletType: { type: String, enum: ['BTC', 'Polygon'], required: true },
+    timestamp: { type: Date, default: Date.now },
   },
   {
     timestamps: {
@@ -76,44 +116,4 @@ const employeeSchema = new Schema(
 
 export const Employer = mongoose.model("Employer", employerSchema);
 export const Employee = mongoose.model("Employee", employeeSchema);
-
-export const hashPassword = async (password) => {
-  try {
-    const salt = await bcrypt.genSalt(10);
-    return await bcrypt.hash(password, salt);
-  } catch (error) {
-    throw new Error("Hashing failed", error);
-  }
-};
-
-export const comparePasswords = async (inputPassword, hashedPassword) => {
-  try {
-    return await bcrypt.compare(inputPassword, hashedPassword);
-  } catch (error) {
-    throw new Error("Comparison failed", error);
-  }
-};
-
-// Generate a random key and initialization vector (IV)
-const algorithm = "aes-256-cbc";
-const key = process.env.ENCRYPTION_KEY;
-
-export const encrypt = (text) => {
-  const cipherText = cryptoJs.AES.encrypt(text, key).toString();
- 
-  return cipherText;
-};
-
-export const decrypt = (encryptedText) => {
-  try {
-    const bytes = cryptoJs.AES.decrypt(encryptedText, key);
-    if (bytes.sigBytes > 0) {
-      const decryptedData = bytes.toString(cryptoJs.enc.Utf8);
-      return decryptedData;
-    } else {
-      throw new Error("Decryption Failed Invalid Key");
-    }
-  } catch (error) {
-    throw new Error("Decryption Failed Invalid Key", error);
-  }
-};
+export const Transaction = mongoose.model("Transaction", transactionSchema);
