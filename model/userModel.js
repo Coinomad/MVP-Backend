@@ -104,7 +104,11 @@ const transactionSchema = new Schema(
     },
     amount: { type: Number, required: true },
     walletType: { type: String, enum: ['BTC', 'Polygon'], required: true },
+    transactionId: { type: String, required: true },
+    senderAddress: { type: String, required: true },
+    recipientAddress: { type: String, required: true },
     timestamp: { type: Date, default: Date.now },
+    status: { type: String, default: 'Pending' },
   },
   {
     timestamps: {
