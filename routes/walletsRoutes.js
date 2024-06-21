@@ -6,7 +6,7 @@ const walletRouter = express.Router()
 
 
 
-walletRouter.post("/send/btc/", sendBitcoinToEmployees)
+walletRouter.post("/send/bitcoin/", sendBitcoinToEmployees)
 walletRouter.post("/send/polygon/", sendPolygonToEmployees)
 
 export default walletRouter
