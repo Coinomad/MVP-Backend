@@ -10,9 +10,15 @@ const options = {
 export const generateJwt = async (email, userId) => {
   try {
     const payload = { email: email, id: userId };
-    const token = await jwt.sign(payload, process.env.JWT_SECRET, options);
+    const token = jwt.sign(payload, process.env.JWT_SECRET, options);
     return { error: false, token: token };
   } catch (error) {
     return { error: true };
   }
 };
+
+
+export const verifyToken = (token) => {
+  return jwt.verify(token, SECRET_KEY);
+};
+
