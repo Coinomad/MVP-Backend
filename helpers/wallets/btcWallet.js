@@ -52,7 +52,7 @@ export const SendBTC = async (sender, receiver) => {
   try {
     const transactionResponse = await axios.post("/bitcoin/transaction", {
       to: receiver,
-      fromAddress: [sender],
+      fromAddress: sender,
     });
    
 
