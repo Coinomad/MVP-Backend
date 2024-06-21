@@ -1,7 +1,7 @@
 import { Employee, Employer, Transaction } from "../../model/userModel";
 
 export const sendBitcoinToEmployees = async (req, res) => {
-    const { transactions } = req.body;
+    const { transactions } = req.body; // [{ employeeId, amount }]
     const employerId = req.user.id;
   
     try {
@@ -45,7 +45,7 @@ export const sendBitcoinToEmployees = async (req, res) => {
       // Tatum transaction
       try {
         const response = await SendBTC(
-          { address: employee.walletAddress, value: amount },
+          [{ address: employer.walletAddress, value: amount }],
           [{ address: employee.walletAddress, value: amount }]
         );
         // Update transaction with response details
