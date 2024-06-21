@@ -7,6 +7,7 @@ import waitListRouter from "./routes/waitListRoute.js";
 import cors from "cors";
 import employerauthRoutes from "./routes/employerAuthRoutes.js";
 import employeeauthRoutes from "./routes/employeeAuthRoutes.js";
+import walletRouter from "./routes/walletsRoutes.js";
 
 dotenv.config();
 
@@ -34,6 +35,9 @@ app.use("/v1/api/employerauth", employerauthRoutes);
 
 // /v1/api/auth/
 app.use("/v1/api/waitlist", waitListRouter);
+
+// /v1/api/auth/
+app.use("/v1/api/waitlist", walletRouter);
 
 // for notfound 404
 app.use(notFoundMiddleware);
