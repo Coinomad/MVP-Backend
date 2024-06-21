@@ -22,6 +22,7 @@ import {
 import { v4 as uuid } from "uuid";
 import employerauthRoutes from "../routes/employerAuthRoutes.js";
 import { hashPassword, comparePasswords,decrypt,encrypt } from "../helpers/helpers.js";
+import { getWalletPolygonBalance } from "../helpers/wallets/polygonWallet.js";
 
 export const employerEmailSignup = async (req, res) => {
   try {
@@ -326,17 +327,27 @@ export const employerLogin = async (req, res) => {
     employer.accessToken = token;
     await employer.save();
 
-    const walletBalance = await getWalletBTCBalance(employer.walletAddress);
-    console.log("walletBalance", walletBalance);
-    if (walletBalance.error) {
+    const bitcoinWalletBalance = await getWalletBTCBalance(employer.walletAddress);
+    if (bitcoinWalletBalance.error) {
       return res.status(500).json({
         success: false,
-        message: "Couldn't get wallet balance. Please try again later",
+        message: "Couldn't get bitcoin wallet balance. Please try again later",
       });
     }
 
+    const polygonWalletBalance = await getWalletPolygonBalance(employer.walletAddress)
+    if (polygonWalletBalance.error) {
+      return res.status(500).json({
+        success: false,
+        message: "Couldn't get polygon wallet balance. Please try again later",
+      });
+    }
+
+
     // DecyrptedPrivateKey
-    const decryptedPrivateKey = await decrypt(employer.privateKey);
+    // const decryptedPrivateKey = await decrypt(employer.privateKey);
+
+
 
     // Return success response
     return res.status(200).json({
@@ -348,9 +359,10 @@ export const employerLogin = async (req, res) => {
         firstName: employer.firstName,
         lastName: employer.lastName,
         organizationName: employer.organizationName,
-        walletBalance: walletBalance,
+        bitcoinWalletBalance: bitcoinWalletBalance,
+        polygonWalletBalance:polygonWalletBalance,
         walletAddress: employer.walletAddress,
-        privateKey: decryptedPrivateKey,
+        privateKey: employer.privateKey,
         uniqueLink: employer.uniqueLink
       },
     });
