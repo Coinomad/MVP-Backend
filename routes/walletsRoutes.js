@@ -1,7 +1,8 @@
 import express from "express";
-import { sendPolygonToEmployees } from "../controllers/walletControllers/polygonControllers";
-import { sendBitcoinToEmployees } from "../controllers/walletControllers/bitcoinControllers";
-import { authMiddleware } from "../middleware/ProtectRoutes";
+
+import { sendBitcoinToEmployees } from "../controllers/walletControllers/bitcoinControllers.js";
+import { sendPolygonToEmployees } from "../controllers/walletControllers/polygonControllers.js";
+import { authMiddleware } from "../middleware/ProtectRoutes.js";
 
 const walletRouter = express.Router();
 
