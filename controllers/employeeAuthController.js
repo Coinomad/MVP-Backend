@@ -28,7 +28,7 @@ import {
   encrypt,
 } from "../helpers/helpers.js";
 import { v4 as uuid } from "uuid";
-import { generatePolygonWallet } from "../helpers/wallets/polygonWallet.js";
+import { generatePolygonWallet, getWalletPolygonBalance } from "../helpers/wallets/polygonWallet.js";
 
 export const employeeSignup = async (req, res) => {
   try {
@@ -302,14 +302,6 @@ export const employeeLogin = async (req, res) => {
 
 
 
-    // Get wallet Balance
-    const walletBalance = await getWalletBTCBalance(employee.walletAddress);
-    if (walletBalance.error) {
-      return res.status(500).json({
-        success: false,
-        message: "Couldn't get wallet balance. Please try again later",
-      });
-    }
 
     // DecyrptedPrivateKey
     // const decryptedPrivateKey = decrypt(employee.privateKey, key, iv);
@@ -346,7 +338,6 @@ export const employeeLogin = async (req, res) => {
         email: employee.email,
         firstName: employee.firstName,
         lastName: employee.lastName,
-        walletBalance: walletBalance.balance,
         walletAddress: employee.walletAddress,
         bitcoinWalletBalance: bitcoinWalletBalance,
         polygonWalletBalance:polygonWalletBalance,
