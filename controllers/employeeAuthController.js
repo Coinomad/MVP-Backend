@@ -28,6 +28,7 @@ import {
   encrypt,
 } from "../helpers/helpers.js";
 import { v4 as uuid } from "uuid";
+import { generatePolygonWallet } from "../helpers/wallets/polygonWallet.js";
 
 export const employeeSignup = async (req, res) => {
   try {
@@ -65,8 +66,8 @@ export const employeeSignup = async (req, res) => {
     }
 
     const hash = await hashPassword(value.password);
-    const id = uuid(); // Generate unique id for the employee
-    value.userId = id;
+    // const id = uuid(); // Generate unique id for the employee
+    // value.userId = id;
     delete value.confirmPassword;
     value.password = hash;
 
@@ -194,21 +195,40 @@ export const employeeActivate = async (req, res) => {
     }
 
     // Generate wallet
-    const walletResult = await generateBTCWallet();
-    if (walletResult.error) {
+    const bitcoinWalletResult = await generateBTCWallet();
+    if (bitcoinWalletResult.error) {
       return res.status(400).json({
         success: false,
-        message: walletResult.error.message,
+        message: bitcoinWalletResult.error.message,
       });
     }
-    // hash private key
-    const encryptPrivateKey = await encrypt(walletResult.privateKey);
+
+    // Generate wallet
+    const polygonWalletResult = await generatePolygonWallet();
+    if (polygonWalletResult.error) {
+      return res.status(400).json({
+        success: false,
+        message: polygonWalletResult.error.message,
+      });
+    }
+
+
+    // Hash the password
+    const hashedPassword = await hashPassword(value.password);
+
+    // encrypt private key
+    const encryptbitcoinWalletPrivateKey =  encrypt(bitcoinWalletResult.privateKey);
+    const encryptploygonWalletPrivateKey =  encrypt(polygonWalletResult.privateKey);
+    
     // Update user details
     employee.emailToken = "null";
     employee.emailTokenExpires = null;
     employee.active = true;
-    employee.privateKey = encryptPrivateKey;
-    employee.walletAddress = walletResult.walletAddress;
+    employee.password= hashedPassword;
+    employee.bitcoinWalletprivateKey = encryptbitcoinWalletPrivateKey;
+    employee.polygonWalletprivateKey = encryptploygonWalletPrivateKey;
+    employee.bitcoinWalletAddress = bitcoinWalletResult.walletAddress;
+    employee.polygonWalletAddress = polygonWalletResult.walletAddress;
 
     // Save the updated user to the database
     await employee.save();
@@ -280,9 +300,7 @@ export const employeeLogin = async (req, res) => {
       });
     }
 
-    // Save the access token to the employee
-    employee.accessToken = token;
-    await employee.save();
+
 
     // Get wallet Balance
     const walletBalance = await getWalletBTCBalance(employee.walletAddress);
@@ -294,7 +312,30 @@ export const employeeLogin = async (req, res) => {
     }
 
     // DecyrptedPrivateKey
-    const decryptedPrivateKey = decrypt(employee.privateKey, key, iv);
+    // const decryptedPrivateKey = decrypt(employee.privateKey, key, iv);
+
+
+    const bitcoinWalletBalance = await getWalletBTCBalance(employee.bitcoinWalletAddress);
+    if (bitcoinWalletBalance.error) {
+      return res.status(500).json({
+        success: false,
+        message: `bitcoin wallet balance error:${bitcoinWalletBalance.error.message}`,
+      });
+    }
+
+    const polygonWalletBalance = await getWalletPolygonBalance(employee.polygonWalletAddress);
+    if (polygonWalletBalance.error) {
+      return res.status(500).json({
+        success: false,
+        message: `polygon wallet error:${polygonWalletBalance.error.message}`,
+      });
+    }
+
+    
+    employee.bitcoinWalletBalance =bitcoinWalletBalance;
+    employee.polygonWalletBalance = polygonWalletBalance;
+    employee.accessToken = token;
+    await employee.save();
 
     // Return success response
     return res.status(200).json({
@@ -307,7 +348,13 @@ export const employeeLogin = async (req, res) => {
         lastName: employee.lastName,
         walletBalance: walletBalance.balance,
         walletAddress: employee.walletAddress,
-        privateKey: decryptedPrivateKey,
+        bitcoinWalletBalance: bitcoinWalletBalance,
+        polygonWalletBalance:polygonWalletBalance,
+        bitcoinWalletAddress: employee.bitcoinWalletAddress,
+        polygonWalletAddress: employee.polygonWalletAddress,
+        bitcoinWalletprivateKey: employee.bitcoinWalletprivateKey,
+        polygonWalletprivateKey:employee.polygonWalletprivateKey,
+
       },
     });
   } catch (err) {
