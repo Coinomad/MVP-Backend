@@ -214,7 +214,7 @@ export const employeeActivate = async (req, res) => {
 
 
     // Hash the password
-    const hashedPassword = await hashPassword(value.password);
+    // const hashedPassword = await hashPassword(value.password);
 
     // encrypt private key
     const encryptbitcoinWalletPrivateKey =  encrypt(bitcoinWalletResult.privateKey);
@@ -224,7 +224,7 @@ export const employeeActivate = async (req, res) => {
     employee.emailToken = "null";
     employee.emailTokenExpires = null;
     employee.active = true;
-    employee.password= hashedPassword;
+    // employee.password= hashedPassword;
     employee.bitcoinWalletprivateKey = encryptbitcoinWalletPrivateKey;
     employee.polygonWalletprivateKey = encryptploygonWalletPrivateKey;
     employee.bitcoinWalletAddress = bitcoinWalletResult.walletAddress;
@@ -291,7 +291,7 @@ export const employeeLogin = async (req, res) => {
     // Generate the JWT access token
     const { error: tokenError, token } = await generateJwt(
       employee.email,
-      employee.userId
+      employee._id
     );
     if (tokenError) {
       return res.status(500).json({
