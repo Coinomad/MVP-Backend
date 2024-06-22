@@ -18,7 +18,7 @@ export const generateBTCWallet = async () => {
     const addressResponse = await axios.get(`/bitcoin/address/${xpub}/0`);
     const walletAddress = addressResponse.data.address;
 
-    const privateKeyResponse = await axios.post(`/wallet/priv`, {
+    const privateKeyResponse = await axios.post(`/bitcoin/wallet/priv`, {
       index: 0,
       mnemonic,
     });
@@ -29,6 +29,7 @@ export const generateBTCWallet = async () => {
       walletAddress,
     };
   } catch (error) {
+    console.log(error);
     return {
       error: { message: error },
     };
@@ -40,6 +41,7 @@ export const getWalletBTCBalance = async (address) => {
     const walletResponse = await axios.get(`/bitcoin/address/balance/${address}`);
     return walletResponse.data;
   } catch (error) {
+    console.log(error);
     return {
       error: { message: error },
     };
@@ -54,8 +56,6 @@ export const SendBTC = async (sender, receiver) => {
       to: receiver,
       fromAddress: sender,
     });
-   
-
     return transactionResponse.data;
   } catch (error) {
     return {
