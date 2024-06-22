@@ -37,7 +37,7 @@ app.use("/v1/api/employerauth", employerauthRoutes);
 app.use("/v1/api/waitlist", waitListRouter);
 
 // /v1/api/auth/
-app.use("/v1/api/waitlist", walletRouter);
+app.use("/v1/api/wallet", walletRouter);
 
 // for notfound 404
 app.use(notFoundMiddleware);
