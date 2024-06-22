@@ -9,10 +9,10 @@ export const generatePolygonWallet = async () => {
     const xpub = walletResponse.data.xpub;
     const mnemonic = walletResponse.data.mnemonic;
 
-    const addressResponse = await axios.get(`/address/${xpub}/0`);
+    const addressResponse = await axios.get(`/polygon/address/${xpub}/0`);
     const walletAddress = addressResponse.data.address;
 
-    const privateKeyResponse = await axios.post(`/wallet/priv`, {
+    const privateKeyResponse = await axios.post(`/polygon/wallet/priv`, {
       index: 0,
       mnemonic,
     });
@@ -31,9 +31,10 @@ export const generatePolygonWallet = async () => {
 
 export const getWalletPolygonBalance = async (address) => {
   try {
-    const walletResponse = await axios.get(`/polygon/address/balance/${address}`);
+    const walletResponse = await axios.get(`/polygon/account/balance/${address}`);
     return walletResponse.data;
   } catch (error) {
+    console.log(error);
     return {
       error: { message: error },
     };
