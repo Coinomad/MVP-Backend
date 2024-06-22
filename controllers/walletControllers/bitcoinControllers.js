@@ -1,14 +1,16 @@
+import { decrypt } from "../../helpers/helpers.js";
 import { SendBTC } from "../../helpers/wallets/btcWallet.js";
 import { Employee, Employer, Transaction } from "../../model/userModel.js";
 
 export const sendBitcoinToEmployees = async (req, res) => {
   const { transactions } = req.body; // [{ employeeId, amount }]
-  const employerId = req.user.id;
+  const employeremail = req.user.email;
+  console.log(transactions);
 
   try {
-    const employer = await Employer.findById(employerId).populate("employees");
+    const employer = await Employer.findOne({email:employeremail}).populate("employees");
     if (!employer) {
-      return res.status(400).json({ message: "Employer not found" });
+      return res.status(404).json({ message: "Employer not found" });
     }
 
     const recipients = [];
@@ -16,7 +18,9 @@ export const sendBitcoinToEmployees = async (req, res) => {
 
     for (const tx of transactions) {
       const { employeeId, amount } = tx;
+      console.log("employeeId",employeeId);
       const employee = await Employee.findById(employeeId);
+      console.log("employee",employee._id);
 
       if (!employee) {
         return res.status(400).json({
@@ -33,7 +37,7 @@ export const sendBitcoinToEmployees = async (req, res) => {
         });
       }
 
-      if (employer.polygonBalance < amount) {
+      if (employer.bitcoinWalletBalance.incoming < amount) {
         return res.status(400).json({
           success: false,
           message: `Insufficient balance for employee with ID ${employeeId}`,
@@ -41,15 +45,15 @@ export const sendBitcoinToEmployees = async (req, res) => {
       }
 
       employeeDetails.push({
-        employeeId: employee._id,
-        employeeWalletAddress: employee.walletAddress,
+        employeeId: employeeId,
+        employeeWalletAddress: employee.bitcoinWalletAddress,
         amount,
-        employerAddress: employer.walletAddress,
+        employerAddress: employer.bitcoinWalletAddress,
       });
 
       recipients.push({
-        address: employee.walletAddress,
-        value: amount.toString(),
+        address: employee.bitcoinWalletAddress,
+        value: Number(amount),
       });
     }
 
@@ -60,14 +64,18 @@ export const sendBitcoinToEmployees = async (req, res) => {
       });
     }
 
+     const decryptedPrivateKey = decrypt(employer.bitcoinWalletprivateKey);
+
     // Send batch transaction using Tatum
     const response = await SendBTC(
-      [{ address: employer.walletAddress, value: amount }],
+      [{ address: employer.bitcoinWalletAddress, privateKey: decryptedPrivateKey}],
       recipients
     );
-
     if (response.error) {
-      return res.status(500).json({ message: response.error.message });
+      return res.status(500).json({
+        success: false,
+        message: `Server error: ${response.error.message}`,
+      });
     }
 
     // Create and save the batch transaction record
@@ -75,7 +83,7 @@ export const sendBitcoinToEmployees = async (req, res) => {
       employer: employer._id,
       amount: transactions.reduce((acc, tx) => acc + tx.amount, 0), // Total amount of the batch
       walletType: "Polygon",
-      employerAddress: employer.walletAddress,
+      employerAddress: employer.bitcoinWalletAddress,
       employees: employeeDetails, // Add employee details
       transactionId: response.txId, // Use batch response txId
       status: "Completed",
@@ -108,6 +116,7 @@ export const sendBitcoinToEmployees = async (req, res) => {
       },
     });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: error.message });
   }
 };
