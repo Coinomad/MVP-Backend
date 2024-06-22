@@ -3,14 +3,13 @@ import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 import cryptoJs from "crypto-js";
-
+import { v4 as uuidv4 } from 'uuid';
 dotenv.config();
 
 const Schema = mongoose.Schema;
 
 const employerSchema = new Schema(
   {
-    userId: { type: String, unique: true, required: true },
     email: { type: String, required: true, unique: true },
     firstName: { type: String, required: true, default: "nil" },
     lastName: { type: String, required: true, default: "nil" },
@@ -25,10 +24,19 @@ const employerSchema = new Schema(
     resetPasswordExpires: { type: Date, default: null },
     emailToken: { type: String, default: null },
     emailTokenExpires: { type: Date, default: null },
-    privateKey: { type: String, default: null },
-    walletAddress: { type: String, default: null },
-    btcBalance: { type: Number, required: true, default: 0 },
-    polygonBalance: { type: Number, required: true, default: 0 },
+    bitcoinWalletprivateKey: { type: String, default: null },
+    polygonWalletprivateKey: { type: String, default: null },
+    bitcoinWalletAddress: { type: String, default: null },
+    polygonWalletAddress: { type: String, default: null },
+    bitcoinWalletBalance: {
+      incoming: { type: String, default: "0" },
+      outgoing: { type: String, default: "0" },
+      incomingPending: { type: String, default: "0" },
+      outgoingPending: { type: String, default: "0" },
+    },
+    polygonWalletBalance: {
+      balance: { type: String, default: "0" },
+    },
     uniqueLink: {
       type: String,
       required: true,
@@ -66,15 +74,24 @@ const employeeSchema = new Schema(
     resetPasswordToken: { type: String, default: null },
     resetPasswordExpires: { type: Date, default: null },
     emailToken: { type: String, default: null },
-    privateKey: { type: String, default: null },
-    walletAddress: { type: String, default: null },
+    bitcoinWalletprivateKey: { type: String, default: null },
+    polygonWalletprivateKey: { type: String, default: null },
+    bitcoinWalletAddress: { type: String, default: null },
+    polygonWalletAddress: { type: String, default: null },
     emailTokenExpires: { type: Date, default: null },
+    bitcoinWalletBalance: {
+      incoming: { type: String, default: "0" },
+      outgoing: { type: String, default: "0" },
+      incomingPending: { type: String, default: "0" },
+      outgoingPending: { type: String, default: "0" },
+    },
+    polygonWalletBalance: {
+      balance: { type: String, default: "0" },
+    },
     employer: {
       type: Schema.Types.ObjectId,
       ref: "Employer",
     },
-    btcBalance: { type: Number, required: true, default: 0 },
-    polygonBalance: { type: Number, required: true, default: 0 },
     transactions: [
       {
         type: Schema.Types.ObjectId,
@@ -93,22 +110,48 @@ const employeeSchema = new Schema(
 const transactionSchema = new Schema(
   {
     employer: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "Employer",
       required: true,
     },
-    employee: {
-      type: Schema.Types.ObjectId,
-      ref: "Employee",
+    amount: {
+      type: Number,
       required: true,
     },
-    amount: { type: Number, required: true },
-    walletType: { type: String, enum: ['BTC', 'Polygon'], required: true },
-    transactionId: { type: String, required: true },
-    senderAddress: { type: String, required: true },
-    recipientAddress: { type: String, required: true },
-    timestamp: { type: Date, default: Date.now },
-    status: { type: String, default: 'Pending' },
+    walletType: { type: String, enum: ["BTC", "Polygon"], required: true },
+    employerAddress: {
+      type: String,
+      required: true,
+    },
+    employees: [
+      {
+        employeeId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Employee",
+          required: true,
+        },
+        employeeWalletAddress: {
+          type: String,
+          required: true,
+        },
+        amount: {
+          type: Number,
+          required: true,
+        },
+        employerAddress: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
+  
+    transactionId: { type: String, required: true, unique: true },
+    status: {
+      type: String,
+      required: true,
+      enum: ["Pending", "Completed", "Failed"],
+      default: "Pending",
+    }, 
   },
   {
     timestamps: {
