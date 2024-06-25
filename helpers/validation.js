@@ -36,10 +36,9 @@ export const employeeSchema = Joi.object().keys({
   firstName: Joi.string().required(),
   lastName: Joi.string().required(),
   email: Joi.string().required().email({ minDomainSegments: 2 }),
-  uniqueLink: Joi.string().required(),
   organizationName: Joi.string().required(),
-  password: Joi.string().required().min(8),
-  confirmPassword: Joi.string().valid(Joi.ref("password")).required(),
+  walletAddress: Joi.string().required(),
+  asset: Joi.string().required(),
 });
 
 export const resendTokenSchema = Joi.object().keys({
