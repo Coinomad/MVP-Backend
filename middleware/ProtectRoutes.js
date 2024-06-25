@@ -12,7 +12,7 @@ export const authMiddleware = async (req, res, next) => {
 
     const decoded = verifyToken(token);
     req.user = decoded;
-    console.log("Jwt worked");
+    // console.log("Jwt worked",decoded);
     next();
   } catch (error) {
     console.log(error);
