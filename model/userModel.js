@@ -89,7 +89,7 @@ const employeeSchema = new Schema(
   }
 );
 
-const transactionSchema = new Schema(
+const  employerToEmployeeTransactionsSchema = new Schema(
   {
     transactionId: { type: String, required: true, unique: true },
     amount: {
@@ -119,7 +119,7 @@ const transactionSchema = new Schema(
       ref: "Employee",
       required: true,
     },
-    date: {
+    datetime: {
       type: Date,
       required: true,
       default: Date.now(),
@@ -139,7 +139,49 @@ const transactionSchema = new Schema(
     },
   }
 );
+const employerTransactionsSchema = new Schema(
+  {
+    transactionId: { type: String, required: true, unique: true },
+    amount: {
+      type: Number,
+      required: true,
+    },
+    walletType: { type: String, enum: ["BTC", "Polygon"], required: true },
+    employerWalletAddress: {
+      type: String,
+      required: true,
+    },
+    receiverWalletAddress: {
+      type: String,
+      required: true,
+    },
+    employer: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Employer",
+      required: true,
+    },
+    datetime: {
+      type: Date,
+      required: true,
+      default: Date.now(),
+    },
+    status: {
+      type: String,
+      required: true,
+      enum: ["Pending", "Completed", "Failed"],
+      default: "Pending",
+    },
+  },
+  {
+    timestamps: {
+      createdAt: "createdAt",
+      updatedAt: "updatedAt",
+    },
+  }
+);
+
 
 export const Employer = mongoose.model("Employer", employerSchema);
 export const Employee = mongoose.model("Employee", employeeSchema);
-export const Transaction = mongoose.model("Transaction", transactionSchema);
+export const EmployerEmployeeTransaction = mongoose.model("EmployerEmployeeTransaction", employerToEmployeeTransactionsSchema);
+export const EmployerTransaction = mongoose.model("EmployerTransaction", employerTransactionsSchema);
