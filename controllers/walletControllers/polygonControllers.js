@@ -40,15 +40,15 @@ export const sendPolygonToEmployees = async (req, res) => {
       }
 
       employeeDetails.push({
-        employeeId: employee._id,
-        employeeWalletAddress: employee.walletAddress,
+        employeeId: employeeId,
+        employeeWalletAddress: employee.polygonWalletAddress,
         amount,
-        employerAddress: employer.walletAddress,
+        employerAddress: employer.polygonWalletAddress,
       });
 
       recipients.push({
-        address: employee.walletAddress,
-        value: amount.toString(),
+        address: employee.polygonWalletAddress,
+        // value: Number(amount),
       });
     }
 
@@ -63,11 +63,12 @@ export const sendPolygonToEmployees = async (req, res) => {
     }
 
     // Send batch transaction using Tatum
-    const response = await SendPolygon(employer.privateKey, recipients);
+    const response = await SendPolygon(employer.polygonWalletPrivateKey, recipients, transactions[0].amount);
+    console.log("response.error.message",response.error.message);
     if (response.error) {
-      return res.status(500).json( {
+      return res.status(500).json({
         success: false,
-        message: response.error.message,
+        message: `Server error: ${response.error.message}`,
       });
     }
    
@@ -76,7 +77,7 @@ export const sendPolygonToEmployees = async (req, res) => {
       employer: employer._id,
       amount: transactions.reduce((acc, tx) => acc + tx.amount, 0), // Total amount of the batch
       walletType: "Polygon",
-      employerAddress: employer.walletAddress,
+      employerAddress: employer.polygonWalletAddress,
       employees: employeeDetails, // Add employee details
       transactionId: response.txId, // Use batch response txId
       status: "Completed",
