@@ -46,6 +46,13 @@ export const employeeUpdateSchema = Joi.object().keys({
   walletAddress: Joi.string(),
   asset: Joi.string(),
 });
+
+
+export const sendBitCoinSchema = Joi.object().keys({
+  amount: Joi.number().required(),
+  employeeId: Joi.string().required(),
+});
+
 export const resendTokenSchema = Joi.object().keys({
   email: Joi.string().required().email({ minDomainSegments: 2 }),
 });
