@@ -3,7 +3,7 @@ import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 import cryptoJs from "crypto-js";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 dotenv.config();
 
 const Schema = mongoose.Schema;
@@ -68,7 +68,7 @@ const employeeSchema = new Schema(
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    walletAddress:{ type: String, required: true,unique: true  },
+    walletAddress: { type: String, required: true, unique: true },
     asset: { type: String, enum: ["BTC", "Polygon"], required: true },
     employer: {
       type: Schema.Types.ObjectId,
@@ -91,49 +91,46 @@ const employeeSchema = new Schema(
 
 const transactionSchema = new Schema(
   {
-    employer: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Employer",
-      required: true,
-    },
+    transactionId: { type: String, required: true, unique: true },
     amount: {
       type: Number,
       required: true,
     },
     walletType: { type: String, enum: ["BTC", "Polygon"], required: true },
-    employerAddress: {
+    amount: {
+      type: Number,
+      required: true,
+    },
+    employerWalletAddress: {
       type: String,
       required: true,
     },
-    employees: [
-      {
-        employeeId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Employee",
-          required: true,
-        },
-        employeeWalletAddress: {
-          type: String,
-          required: true,
-        },
-        amount: {
-          type: Number,
-          required: true,
-        },
-        employerAddress: {
-          type: String,
-          required: true,
-        },
-      },
-    ],
-  
-    transactionId: { type: String, required: true, unique: true },
+    employeeWalletAddress: {
+      type: String,
+      required: true,
+    },
+    employer: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Employer",
+      required: true,
+    },
+    employee: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Employee",
+      required: true,
+    },
+    date: {
+      type: Date,
+      required: true,
+      default: Date.now(),
+    },
+
     status: {
       type: String,
       required: true,
       enum: ["Pending", "Completed", "Failed"],
       default: "Pending",
-    }, 
+    },
   },
   {
     timestamps: {
