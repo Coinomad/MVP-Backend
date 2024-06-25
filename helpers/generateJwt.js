@@ -9,7 +9,7 @@ const options = {
 
 export const generateJwt = async (email, userId) => {
   try {
-    const payload = { email: email, id: userId };
+    const payload = { email: email, id: userId.toHexString() };
     const token = jwt.sign(payload, process.env.JWT_SECRET, options);
     return { error: false, token: token };
   } catch (error) {

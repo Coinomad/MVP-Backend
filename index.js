@@ -5,9 +5,9 @@ import { notFoundMiddleware } from "./middleware/notFoundMiddleware.js";
 import mongoose from "mongoose";
 import waitListRouter from "./routes/waitListRoute.js";
 import cors from "cors";
-import employerauthRoutes from "./routes/employerAuthRoutes.js";
-import employeeauthRoutes from "./routes/employeeAuthRoutes.js";
+import employerauthRoutes from "./routes/employerAuthRoutes.js";;
 import walletRouter from "./routes/walletsRoutes.js";
+import employeeRoutes from "./routes/employeeRoutes.js";
 
 dotenv.config();
 
@@ -28,7 +28,7 @@ mongoose
 
 
 // /v1/api/employeeauth
-app.use("/v1/api/employeeauth", employeeauthRoutes);
+app.use("/v1/api/employee", employeeRoutes);
 
 // /v1/api/employerauth
 app.use("/v1/api/employerauth", employerauthRoutes);

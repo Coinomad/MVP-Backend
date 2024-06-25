@@ -36,11 +36,16 @@ export const employeeSchema = Joi.object().keys({
   firstName: Joi.string().required(),
   lastName: Joi.string().required(),
   email: Joi.string().required().email({ minDomainSegments: 2 }),
-  organizationName: Joi.string().required(),
   walletAddress: Joi.string().required(),
   asset: Joi.string().required(),
 });
-
+export const employeeUpdateSchema = Joi.object().keys({
+  firstName: Joi.string(),
+  lastName: Joi.string(),
+  email: Joi.string().email({ minDomainSegments: 2 }),
+  walletAddress: Joi.string(),
+  asset: Joi.string(),
+});
 export const resendTokenSchema = Joi.object().keys({
   email: Joi.string().required().email({ minDomainSegments: 2 }),
 });

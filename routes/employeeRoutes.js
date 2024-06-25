@@ -1,16 +1,24 @@
 import express from "express";
 import {
+  deleteEmployee,
   getEmployees,
   registerEmployee,
+  updateEmployeeData,
 } from "../controllers/employeeController.js";
 import { authMiddleware } from "../middleware/ProtectRoutes.js";
 
-const employeeauthRoutes = express.Router();
+const employeeRoutes = express.Router();
 
-employeeauthRoutes.post("/registeremployee", authMiddleware,registerEmployee);
+employeeRoutes.post("/register", authMiddleware, registerEmployee);
 
-employeeauthRoutes.post("/getemployees",authMiddleware,getEmployees);
+employeeRoutes.get("/getemployees", authMiddleware, getEmployees);
 
-// employeeauthRoutes.get("/logout", validateToken, Logout);
+employeeRoutes.put("/update/:employeeId", authMiddleware, updateEmployeeData);
 
-export default employeeauthRoutes;
+employeeRoutes.delete(
+  "/delete/:employeeId",
+  authMiddleware,
+  deleteEmployee
+);
+
+export default employeeRoutes;

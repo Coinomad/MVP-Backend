@@ -68,8 +68,8 @@ const employeeSchema = new Schema(
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    walletAddress:{ type: String, required: true },
-    asset: { type: String, required: true },
+    walletAddress:{ type: String, required: true,unique: true  },
+    asset: { type: String, enum: ["BTC", "Polygon"], required: true },
     employer: {
       type: Schema.Types.ObjectId,
       ref: "Employer",
