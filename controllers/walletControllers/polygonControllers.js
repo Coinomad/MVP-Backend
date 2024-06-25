@@ -1,113 +1,167 @@
+import { sendCoinToEmployeeSchema } from "../../helpers/validation.js";
 import { SendPolygon } from "../../helpers/wallets/polygonWallet.js";
-import { Employee, Employer, Transaction } from "../../model/userModel.js";
+import {
+  Employee,
+  Employer,
+  EmployerEmployeeTransaction,
+} from "../../model/userModel.js";
 
-export const sendPolygonToEmployees = async (req, res) => {
-  const { transactions } = req.body;
+export const sendPolygonToEmployee = async (req, res) => {
   const employerId = req.user.id;
+
   try {
+    const { value, error } = sendCoinToEmployeeSchema.validate(req.body);
+    if (error) {
+      console.log(error.message);
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
     const employer = await Employer.findById(employerId).populate("employees");
     if (!employer) {
-      return res.status(400).json({ message: "Employer not found" });
+      return res.status(404).json({ message: "Employer not found" });
     }
 
-    const recipients = [];
-    const employeeDetails = []; // Array to store employee details
-
-    for (const tx of transactions) {
-      const { employeeId, amount } = tx;
-      const employee = await Employee.findById(employeeId);
-
-      if (!employee) {
-        return res.status(400).json({
-          success: false,
-          message: `Employee with ID ${employeeId} not found`,
-        });
-      }
-
-      // Ensure the employee belongs to the employer
-      if (!employer.employees.some((emp) => emp.equals(employee._id))) {
-        return res.status(400).json({
-          success: false,
-          message: `Employee with ID ${employeeId} does not belong to this employer`,
-        });
-      }
-
-      if (employer.polygonBalance < amount) {
-        return res.status(400).json({
-          success: false,
-          message: `Insufficient balance for employee with ID ${employeeId}`,
-        });
-      }
-
-      employeeDetails.push({
-        employeeId: employeeId,
-        employeeWalletAddress: employee.polygonWalletAddress,
-        amount,
-        employerAddress: employer.polygonWalletAddress,
-      });
-
-      recipients.push({
-        address: employee.polygonWalletAddress,
-        // value: Number(amount),
+    const employee = await Employee.findById(value.employeeId);
+    if (!employee) {
+      return res.status(404).json({
+        success: false,
+        message: `Employee with ID ${value.employeeId} not found`,
       });
     }
 
-    
-    if (recipients.length === 0) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: `No valid transactions to process`,
-        });
+    if (!employer.employees.some((emp) => emp.equals(employee._id))) {
+      return res.status(400).json({
+        success: false,
+        message: `Employee with ID ${value.employeeId} does not belong to this employer`,
+      });
     }
 
-    // Send batch transaction using Tatum
-    const response = await SendPolygon(employer.polygonWalletPrivateKey, recipients, transactions[0].amount);
-    console.log("response.error.message",response.error.message);
+    if (employer.polygonBalance < value.amount) {
+      return res.status(400).json({
+        success: false,
+        message: `Insufficient balance`,
+      });
+    }
+
+    const decryptedPrivateKey = decrypt(employer.polygonWalletprivateKey);
+
+    const response = await SendPolygon(
+      decryptedPrivateKey,
+      employee.polygonWalletAddress,
+      value.amount
+    );
+
+    if (response.error) {
+      return res.status(500).json({
+        success: false,
+        message: `Transaction failed: ${response.error.message}`,
+      });
+    }
+
+    const transaction = new EmployerEmployeeTransaction({
+      transactionId: response.txId,
+      amount: value.amount,
+      walletType: "Polygon",
+      employerWalletAddress: employer.polygonWalletAddress,
+      employeeWalletAddress: employee.polygonWalletAddress,
+      employer: employer._id,
+      employee: employee._id,
+      status: "Completed",
+    });
+
+    await transaction.save();
+
+    employer.polygonBalance -= value.amount;
+    employer.transactions.push(transaction._id);
+    await employer.save();
+
+  
+    employee.transactions.push(transaction._id);
+    await employee.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Transaction successful",
+      transactionId: transaction.transactionId,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const sendPolygonToAnyone = async (req, res) => {
+  const employerId = req.user.id;
+
+  try {
+    const { value, error } = sendCoinToAnyOneSchema.validate(req.body);
+    if (error) {
+      console.log(error.message);
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    const employer = await Employer.findById(employerId);
+    if (!employer) {
+      return res.status(404).json({ message: "Employer not found" });
+    }
+
+    const actualBalance = employer.polygonBalance;
+
+    if (actualBalance < value.amount) {
+      return res.status(400).json({
+        success: false,
+        message: `Insufficient balance to send ${value.amount} Polygon`,
+      });
+    }
+
+    const decryptedPrivateKey = decrypt(employer.polygonWalletPrivateKey);
+
+    // Send transaction using Tatum
+    const response = await SendPolygon(decryptedPrivateKey, [
+      { address: value.receiverWalletAddress, value: Number(value.amount) },
+    ]);
+
     if (response.error) {
       return res.status(500).json({
         success: false,
         message: `Server error: ${response.error.message}`,
       });
     }
-   
-    // Create and save the batch transaction record
-    const transaction = new Transaction({
-      employer: employer._id,
-      amount: transactions.reduce((acc, tx) => acc + tx.amount, 0), // Total amount of the batch
+
+    // Create and save the transaction record
+    const transaction = new EmployerTransaction({
+      transactionId: response.txId,
+      amount: value.amount,
       walletType: "Polygon",
-      employerAddress: employer.polygonWalletAddress,
-      employees: employeeDetails, // Add employee details
-      transactionId: response.txId, // Use batch response txId
+      employerWalletAddress: employer.polygonWalletAddress,
+      receiverWalletAddress: value.receiverWalletAddress,
+      employer: employer._id,
       status: "Completed",
     });
 
     await transaction.save();
 
     // Update employer balance and transaction history
-    employer.polygonBalance -= transactions.reduce(
-      (acc, tx) => acc + tx.amount,
-      0
-    );
+    employer.polygonBalance -= value.amount;
     employer.transactions.push(transaction._id);
     await employer.save();
-
-    // Update employees' balances and transaction histories
-    for (const detail of employeeDetails) {
-      const employee = await Employee.findById(detail.employeeId);
-      employee.polygonBalance += detail.amount;
-      employee.transactions.push(transaction._id);
-      await employee.save();
-    }
 
     res.status(200).json({
       success: true,
       message: "Transaction successful",
-      transactionId: transaction.transactionId,
-      transaction: transaction,
+      data: {
+        transactionId: transaction.transactionId,
+        transaction,
+      },
     });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: error.message });
   }
 };
