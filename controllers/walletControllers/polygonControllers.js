@@ -1,9 +1,9 @@
-import { sendCoinToEmployeeSchema } from "../../helpers/validation.js";
+import { sendCoinToAnyOneSchema, sendCoinToEmployeeSchema } from "../../helpers/validation.js";
 import { SendPolygon } from "../../helpers/wallets/polygonWallet.js";
 import {
   Employee,
   Employer,
-  EmployerEmployeeTransaction,
+  Transaction,
 } from "../../model/userModel.js";
 
 export const sendPolygonToEmployee = async (req, res) => {
@@ -61,24 +61,32 @@ export const sendPolygonToEmployee = async (req, res) => {
       });
     }
 
-    const transaction = new EmployerEmployeeTransaction({
+    const transaction = new Transaction({
       transactionId: response.txId,
       amount: value.amount,
       walletType: "Polygon",
-      employerWalletAddress: employer.polygonWalletAddress,
-      employeeWalletAddress: employee.polygonWalletAddress,
-      employer: employer._id,
-      employee: employee._id,
-      status: "Completed",
+      senderWalletAddress: employer.polygonWalletAddress,
+      receiverWalletAddress: employee.polygonWalletAddress,
+      status: "Success",
+      receiverName: employee.name,
     });
 
     await transaction.save();
 
-    employer.polygonBalance -= value.amount;
+    const polygonWalletBalance = await getWalletPolygonBalance(
+      employer.polygonWalletAddress
+    );
+    if (polygonWalletBalance.error) {
+      return res.status(500).json({
+        success: false,
+        message: `polygon wallet error:${polygonWalletBalance.error.message}`,
+      });
+    }
+
+    employer.polygonBalance = polygonWalletBalance;
     employer.transactions.push(transaction._id);
     await employer.save();
 
-  
     employee.transactions.push(transaction._id);
     await employee.save();
 
@@ -120,13 +128,14 @@ export const sendPolygonToAnyone = async (req, res) => {
       });
     }
 
-    const decryptedPrivateKey = decrypt(employer.polygonWalletPrivateKey);
+    const decryptedPrivateKey = decrypt(employer.polygonWalletprivateKey);
 
     // Send transaction using Tatum
-    const response = await SendPolygon(decryptedPrivateKey, [
-      { address: value.receiverWalletAddress, value: Number(value.amount) },
-    ]);
-
+    const response = await SendPolygon(
+      decryptedPrivateKey,
+      value.receiverWalletAddress,
+      value.amount
+    );
     if (response.error) {
       return res.status(500).json({
         success: false,
@@ -135,20 +144,29 @@ export const sendPolygonToAnyone = async (req, res) => {
     }
 
     // Create and save the transaction record
-    const transaction = new EmployerTransaction({
+    const transaction = new Transaction({
       transactionId: response.txId,
       amount: value.amount,
       walletType: "Polygon",
-      employerWalletAddress: employer.polygonWalletAddress,
+      senderWalletAddress: employer.polygonWalletAddress,
       receiverWalletAddress: value.receiverWalletAddress,
-      employer: employer._id,
-      status: "Completed",
+      status: "Success",
     });
 
     await transaction.save();
 
-    // Update employer balance and transaction history
-    employer.polygonBalance -= value.amount;
+
+    const polygonWalletBalance = await getWalletPolygonBalance(
+      employer.polygonWalletAddress
+    );
+    if (polygonWalletBalance.error) {
+      return res.status(500).json({
+        success: false,
+        message: `polygon wallet error:${polygonWalletBalance.error.message}`,
+      });
+    }
+
+    employer.polygonBalance = polygonWalletBalance;
     employer.transactions.push(transaction._id);
     await employer.save();
 
