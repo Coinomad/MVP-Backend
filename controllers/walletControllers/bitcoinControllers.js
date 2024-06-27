@@ -4,11 +4,7 @@ import {
   sendCoinToEmployeeSchema,
 } from "../../helpers/validation.js";
 import { SendBTC } from "../../helpers/wallets/btcWallet.js";
-import {
-  Employee,
-  Employer,
-  EmployerEmployeeTransaction,
-} from "../../model/userModel.js";
+import { Employee, Employer, Transaction } from "../../model/userModel.js";
 
 export const sendBitcoinToEmployee = async (req, res) => {
   const employerId = req.user.id;
@@ -58,7 +54,6 @@ export const sendBitcoinToEmployee = async (req, res) => {
 
     const decryptedPrivateKey = decrypt(employer.bitcoinWalletprivateKey);
 
-
     // Send transaction using Tatum
     const response = await SendBTC(
       [
@@ -79,26 +74,33 @@ export const sendBitcoinToEmployee = async (req, res) => {
     }
     // console.log("response", response);
     // Create and save the transaction record
-    const transaction = new EmployerEmployeeTransaction({
+    const transaction = new transaction({
       transactionId: response.txId,
       amount: value.amount,
       walletType: "BTC",
-      employerWalletAddress: employer.bitcoinWalletAddress,
-      employeeWalletAddress: employee.walletAddress,
-      employer: employer._id,
-      employee: employee._id,
+      senderWalletAddress: employer.bitcoinWalletAddress,
+      receiverWalletAddress: employee.walletAddress,
+      direction: "Outgoing",
       status: "Completed",
+      receiverName: employee.name,
     });
 
     await transaction.save();
-
+    const employerbitcoinWalletBalance = await getWalletBTCBalance(
+      employer.bitcoinWalletAddress
+    );
+    if (bitcoinWalletBalance.error) {
+      return res.status(500).json({
+        success: false,
+        message: `bitcoin wallet balance error:${bitcoinWalletBalance.error.message}`,
+      });
+    }
     // Update employer balance and transaction history
-    employer.bitcoinWalletBalance -= value.amount;
+    employer.bitcoinWalletBalance = employerbitcoinWalletBalance;
     employer.transactions.push(transaction._id);
     await employer.save();
 
     // Update employee's balance and transaction history
-    employee.bitcoinWalletBalance += value.amount;
     employee.transactions.push(transaction._id);
     await employee.save();
 
@@ -117,7 +119,6 @@ export const sendBitcoinToEmployee = async (req, res) => {
   }
 };
 
-
 export const sendBitcoinToAnyone = async (req, res) => {
   const employerId = req.user.id;
 
@@ -135,7 +136,6 @@ export const sendBitcoinToAnyone = async (req, res) => {
     if (!employer) {
       return res.status(404).json({ message: "Employer not found" });
     }
-
 
     const actualBalance = getBitcoinActualBalance(
       employer.bitcoinWalletBalance.incoming,
@@ -172,19 +172,30 @@ export const sendBitcoinToAnyone = async (req, res) => {
     }
 
     // Create and save the transaction record
-    const transaction = new EmployerTransaction({
+    const transaction = new Transaction({
       transactionId: response.txId,
       amount: value.amount,
       walletType: "BTC",
-      employerWalletAddress: employer.bitcoinWalletAddress,
+      senderWalletAddress: employer.bitcoinWalletAddress,
       receiverWalletAddress: value.receiverWalletAddress,
-      employer: employer._id,
-      status: "Completed",
+      status: "Success",
+      
     });
 
     await transaction.save();
 
     // Update employer balance and transaction history
+    const employerbitcoinWalletBalance = await getWalletBTCBalance(
+      employer.bitcoinWalletAddress
+    );
+    if (bitcoinWalletBalance.error) {
+      return res.status(500).json({
+        success: false,
+        message: `bitcoin wallet balance error:${bitcoinWalletBalance.error.message}`,
+      });
+    }
+ 
+    employer.bitcoinWalletBalance = employerbitcoinWalletBalance;
     employer.transactions.push(transaction._id);
     await employer.save();
 
