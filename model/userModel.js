@@ -88,8 +88,13 @@ const employeeSchema = new Schema(
     },
   }
 );
-
-const  employerToEmployeeTransactionsSchema = new Schema(
+// const transaction = await Transaction.findById(transactionId)
+// .populate({
+//   path: 'receiver',
+//   match: { role: 'Employer' } // Replace with actual condition relevant to your Employer model
+// })
+// .exec();
+const transactionSchema = new Schema(
   {
     transactionId: { type: String, required: true, unique: true },
     amount: {
@@ -101,53 +106,7 @@ const  employerToEmployeeTransactionsSchema = new Schema(
       type: Number,
       required: true,
     },
-    employerWalletAddress: {
-      type: String,
-      required: true,
-    },
-    employeeWalletAddress: {
-      type: String,
-      required: true,
-    },
-    employer: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Employer",
-      required: true,
-    },
-    employee: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Employee",
-      required: true,
-    },
-    datetime: {
-      type: Date,
-      required: true,
-      default: Date.now(),
-    },
-
-    status: {
-      type: String,
-      required: true,
-      enum: ["Pending", "Completed", "Failed"],
-      default: "Pending",
-    },
-  },
-  {
-    timestamps: {
-      createdAt: "createdAt",
-      updatedAt: "updatedAt",
-    },
-  }
-);
-const employerTransactionsSchema = new Schema(
-  {
-    transactionId: { type: String, required: true, unique: true },
-    amount: {
-      type: Number,
-      required: true,
-    },
-    walletType: { type: String, enum: ["BTC", "Polygon"], required: true },
-    employerWalletAddress: {
+    senderWalletAddress: {
       type: String,
       required: true,
     },
@@ -155,20 +114,26 @@ const employerTransactionsSchema = new Schema(
       type: String,
       required: true,
     },
-    employer: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Employer",
+    receiverName: {
+      type: String,
+      default: null,
+    },
+    direction: {
+      type: String,
       required: true,
+      enum: ["Outgoing", "Incoming"],
+      default: "Outgoing",
     },
     datetime: {
       type: Date,
       required: true,
       default: Date.now(),
     },
+
     status: {
       type: String,
       required: true,
-      enum: ["Pending", "Completed", "Failed"],
+      enum: ["Pending", "Success", "Failed"],
       default: "Pending",
     },
   },
@@ -180,8 +145,6 @@ const employerTransactionsSchema = new Schema(
   }
 );
 
-
 export const Employer = mongoose.model("Employer", employerSchema);
 export const Employee = mongoose.model("Employee", employeeSchema);
-export const EmployerEmployeeTransaction = mongoose.model("EmployerEmployeeTransaction", employerToEmployeeTransactionsSchema);
-export const EmployerTransaction = mongoose.model("EmployerTransaction", employerTransactionsSchema);
+export const Transaction = mongoose.model("Transaction", transactionSchema);
