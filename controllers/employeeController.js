@@ -195,7 +195,7 @@ export const deleteEmployee = async (req, res) => {
     }
 
     // Delete the employee
-    const deletedEmployee = await Employee.findByIdAndDelete(employeeId);
+     await Employee.findByIdAndDelete(employeeId);
 
     return res.status(200).json({
       success: true,
