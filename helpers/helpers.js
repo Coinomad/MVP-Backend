@@ -53,3 +53,10 @@ export const getBitcoinActualBalance = async (
  const actualBalance =(incoming+incoming_Pending)-(outgoing+outgoing_Pending);
   return actualBalance;
 };
+
+
+
+export const convertWalletAddressToQRCode = async (walletAddress) => {
+  const qrCode = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${walletAddress}`;
+  return qrCode;
+}
