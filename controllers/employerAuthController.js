@@ -1,4 +1,7 @@
-import { generateBTCWallet, getWalletBTCBalance } from "../helpers/wallets/btcWallet.js";
+import {
+  generateBTCWallet,
+  getWalletBTCBalance,
+} from "../helpers/wallets/btcWallet.js";
 import { generateJwt } from "../helpers/generateJwt.js";
 import { sendEmail } from "../helpers/mailer.js";
 import {
@@ -14,15 +17,21 @@ import {
   userSchemaLogout,
   userSchemaResetPassword,
 } from "../helpers/validation.js";
-import {
-  
-  Employer,
- 
-} from "../model/userModel.js";
+import { Employer } from "../model/userModel.js";
 import { v4 as uuid } from "uuid";
 import employerauthRoutes from "../routes/employerAuthRoutes.js";
-import { hashPassword, comparePasswords,decrypt,encrypt } from "../helpers/helpers.js";
-import { generatePolygonWallet, getWalletPolygonBalance } from "../helpers/wallets/polygonWallet.js";
+import {
+  hashPassword,
+  comparePasswords,
+  decrypt,
+  encrypt,
+  getBitcoinActualBalance,
+  convertWalletAddressToQRCode,
+} from "../helpers/helpers.js";
+import {
+  generatePolygonWallet,
+  getWalletPolygonBalance,
+} from "../helpers/wallets/polygonWallet.js";
 
 export const employerEmailSignup = async (req, res) => {
   try {
@@ -250,13 +259,16 @@ export const employerDetails = async (req, res) => {
       });
     }
 
-
     // Hash the password
     const hashedPassword = await hashPassword(value.password);
 
     // hash private key
-    const encryptbitcoinWalletPrivateKey =  encrypt(bitcoinWalletResult.privateKey);
-    const encryptploygonWalletPrivateKey =  encrypt(bitcoinWalletResult.privateKey);
+    const encryptbitcoinWalletPrivateKey = encrypt(
+      bitcoinWalletResult.privateKey
+    );
+    const encryptploygonWalletPrivateKey = encrypt(
+      bitcoinWalletResult.privateKey
+    );
 
     employerByEmail.firstName = value.firstName;
     employerByEmail.lastName = value.lastName;
@@ -337,9 +349,9 @@ export const employerLogin = async (req, res) => {
       });
     }
 
-   
-
-    const bitcoinWalletBalance = await getWalletBTCBalance(employer.bitcoinWalletAddress);
+    const bitcoinWalletBalance = await getWalletBTCBalance(
+      employer.bitcoinWalletAddress
+    );
     if (bitcoinWalletBalance.error) {
       return res.status(500).json({
         success: false,
@@ -347,7 +359,16 @@ export const employerLogin = async (req, res) => {
       });
     }
 
-    const polygonWalletBalance = await getWalletPolygonBalance(employer.polygonWalletAddress);
+    const bitcoinActualBalance = getBitcoinActualBalance(
+      employer.bitcoinWalletBalance.incoming,
+      employer.bitcoinWalletBalance.incomingPending,
+      employer.bitcoinWalletBalance.outgoing,
+      employer.bitcoinWalletBalance.outgoingPending
+    );
+
+    const polygonWalletBalance = await getWalletPolygonBalance(
+      employer.polygonWalletAddress
+    );
     if (polygonWalletBalance.error) {
       return res.status(500).json({
         success: false,
@@ -355,19 +376,20 @@ export const employerLogin = async (req, res) => {
       });
     }
 
-    
-    employer.bitcoinWalletBalance =bitcoinWalletBalance;
+    employer.bitcoinWalletBalance = bitcoinWalletBalance;
     employer.polygonWalletBalance = polygonWalletBalance;
     employer.accessToken = token;
     await employer.save();
 
-  
-  
-    
-    // DecyrptedPrivateKey
-    // const decryptedPrivateKey = await decrypt(employer.privateKey);
+    //convert bitcoin wallet address to qr code
+    const employerbitcoinWalletQrCode = await convertWalletAddressToQRCode(
+      employer.bitcoinWalletAddress
+    );
 
-
+    //convert polygon wallet address to qr code
+    const employerPolygonWalletQrCode = await convertWalletAddressToQRCode(
+      employer.polygonWalletAddress
+    );
 
     // Return success response
     return res.status(200).json({
@@ -380,14 +402,18 @@ export const employerLogin = async (req, res) => {
         lastName: employer.lastName,
         organizationName: employer.organizationName,
         bitcoinWalletBalance: bitcoinWalletBalance,
-        polygonWalletBalance:polygonWalletBalance,
+        polygonWalletBalance: polygonWalletBalance,
+        bitcoinActualBalance: bitcoinActualBalance,
+        bitcoinWalletQrCode: employerbitcoinWalletQrCode,
+        polygonWalletQrCode: employerPolygonWalletQrCode,
         bitcoinWalletAddress: employer.bitcoinWalletAddress,
         polygonWalletAddress: employer.polygonWalletAddress,
         bitcoinWalletprivateKey: employer.bitcoinWalletprivateKey,
-        polygonWalletprivateKey:employer.polygonWalletprivateKey,
-        uniqueLink: employer.uniqueLink
+        polygonWalletprivateKey: employer.polygonWalletprivateKey,
+        uniqueLink: employer.uniqueLink,
       },
     });
+    bitcoin;
   } catch (err) {
     console.error("Login error", err);
     return res.status(500).json({
