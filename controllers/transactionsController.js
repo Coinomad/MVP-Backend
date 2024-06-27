@@ -1,4 +1,5 @@
-import { Employer } from "../model/userModel";
+import { Employer } from "../model/userModel.js";
+
 
 export const getTransactions = async (req, res) => {
   const employerId = req.user.id;
@@ -20,11 +21,11 @@ export const getTransactions = async (req, res) => {
           receiverWalletAddress: transaction.receiverWalletAddress,
           amount: transaction.amount,
           asset: transaction.asset,
-          direction: transaction.direction,
+          type: transaction.direction,
           datetime: transaction.transactionId,
           status: transaction.status,
           timestamp: transaction.datetime,
-          name: transaction.receiverName,
+          receiverName: transaction.receiverName,
           hash: transaction.transactionId,
         })),
       },
