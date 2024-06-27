@@ -360,10 +360,10 @@ export const employerLogin = async (req, res) => {
     }
 
     const bitcoinActualBalance = getBitcoinActualBalance(
-      employer.bitcoinWalletBalance.incoming,
-      employer.bitcoinWalletBalance.incomingPending,
-      employer.bitcoinWalletBalance.outgoing,
-      employer.bitcoinWalletBalance.outgoingPending
+      bitcoinWalletBalance.incoming,
+      bitcoinWalletBalance.incomingPending,
+      bitcoinWalletBalance.outgoing,
+      bitcoinWalletBalance.outgoingPending
     );
 
     const polygonWalletBalance = await getWalletPolygonBalance(
