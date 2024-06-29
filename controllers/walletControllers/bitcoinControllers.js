@@ -53,6 +53,15 @@ export const sendBitcoinToEmployee = async (req, res) => {
     }
 
     const decryptedPrivateKey = decrypt(employer.bitcoinWalletprivateKey);
+    const transaction = new transaction({
+      transactionId: null,
+      amount: value.amount,
+      walletType: "BTC",
+      senderWalletAddress: employer.bitcoinWalletAddress,
+      receiverWalletAddress: employee.walletAddress,
+      status: "Pending",
+      receiverName: employee.name,
+    });
 
     // Send transaction using Tatum
     const response = await SendBTC(
@@ -64,35 +73,28 @@ export const sendBitcoinToEmployee = async (req, res) => {
       ],
       [{ address: employee.walletAddress, value: value.amount }]
     );
-    // console.log("response", response.error.message);
+
     if (response.error) {
+      transaction.status = "Failed";
+      await transaction.save();
+      console.log(response.error);
       return res.status(500).json({
         success: false,
-        message: `Server error: ${response.error.message}`,
-        // data: transaction,
+        message: `Transaction failed`,
       });
     }
-    // console.log("response", response);
-    // Create and save the transaction record
-    const transaction = new transaction({
-      transactionId: response.txId,
-      amount: value.amount,
-      walletType: "BTC",
-      senderWalletAddress: employer.bitcoinWalletAddress,
-      receiverWalletAddress: employee.walletAddress,
-      direction: "Outgoing",
-      status: "Completed",
-      receiverName: employee.name,
-    });
 
+    transaction.transactionId = response.txId;
+    transaction.status = "Success";
     await transaction.save();
+
     const employerbitcoinWalletBalance = await getWalletBTCBalance(
       employer.bitcoinWalletAddress
     );
     if (bitcoinWalletBalance.error) {
       return res.status(500).json({
         success: false,
-        message: `bitcoin wallet balance error:${bitcoinWalletBalance.error.message}`,
+        message: `Error getting bitcoin wallet balance`,
       });
     }
     // Update employer balance and transaction history
@@ -115,7 +117,10 @@ export const sendBitcoinToEmployee = async (req, res) => {
   } catch (error) {
     console.log(error);
 
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      success: false,
+      message: `Error sending bitcoin to employee`,
+    });
   }
 };
 
@@ -134,7 +139,10 @@ export const sendBitcoinToAnyone = async (req, res) => {
 
     const employer = await Employer.findById(employerId);
     if (!employer) {
-      return res.status(404).json({ message: "Employer not found" });
+      return res.status(404).json({
+        success: false,
+        message: `Employer not found`,
+      });
     }
 
     const actualBalance = getBitcoinActualBalance(
@@ -153,6 +161,17 @@ export const sendBitcoinToAnyone = async (req, res) => {
 
     const decryptedPrivateKey = decrypt(employer.bitcoinWalletprivateKey);
 
+    // Create and save the transaction record
+    const transaction = new Transaction({
+      transactionId: null,
+      amount: value.amount,
+      walletType: "BTC",
+      senderWalletAddress: employer.bitcoinWalletAddress,
+      receiverWalletAddress: value.receiverWalletAddress,
+
+      status: "Pending",
+    });
+
     // Send transaction using Tatum
     const response = await SendBTC(
       [
@@ -165,23 +184,17 @@ export const sendBitcoinToAnyone = async (req, res) => {
     );
 
     if (response.error) {
+      transaction.status = "Failed";
+      await transaction.save();
+      console.log(response.error);
       return res.status(500).json({
         success: false,
-        message: `Server error: ${response.error.message}`,
+        message: `Transaction Failed`,
       });
     }
 
-    // Create and save the transaction record
-    const transaction = new Transaction({
-      transactionId: response.txId,
-      amount: value.amount,
-      walletType: "BTC",
-      senderWalletAddress: employer.bitcoinWalletAddress,
-      receiverWalletAddress: value.receiverWalletAddress,
-      status: "Success",
-      
-    });
-
+    transaction.transactionId = response.txId;
+    transaction.status = "Success";
     await transaction.save();
 
     // Update employer balance and transaction history
@@ -189,12 +202,13 @@ export const sendBitcoinToAnyone = async (req, res) => {
       employer.bitcoinWalletAddress
     );
     if (bitcoinWalletBalance.error) {
+      console.log(response.error);
       return res.status(500).json({
         success: false,
-        message: `bitcoin wallet balance error:${bitcoinWalletBalance.error.message}`,
+        message: `Error getting bitcoin wallet balance`,
       });
     }
- 
+
     employer.bitcoinWalletBalance = employerbitcoinWalletBalance;
     employer.transactions.push(transaction._id);
     await employer.save();
@@ -209,6 +223,56 @@ export const sendBitcoinToAnyone = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      success: false,
+      message: `Error sending bitcoin`,
+    });
+  }
+};
+
+export const handleIncomingBitcoinTransaction = async (req, res, walletType) => {
+  try {
+    const { address, amount, blockNumber, counterAddress, txId, chain } =
+      req.body;
+
+    // Find the employer associated with the address
+    const employer = await Employer.findOne({
+      [`${walletType}WalletAddress`]: address,
+    });
+    if (!employer) {
+      return res.status(404).json({ error: "Employer not found" });
+    }
+
+    // Create a new transaction document
+    const newTransaction = new Transaction({
+      transactionId: txId,
+      amount: parseFloat(amount),
+      walletType:"BTC", // Dynamic wallet type (BTC or Polygon)
+      senderWalletAddress: counterAddress,
+      receiverWalletAddress: address,
+      receiverName: employer.organizationName, // Optional: Add employer info if needed
+      direction: "Incoming",
+      status: "Success", // Assuming the transaction is successful as it reached this point
+    });
+
+    // Save the transaction to the database
+    await newTransaction.save();
+
+    // Add transaction to employer's transactions
+    employer.transactions.push(newTransaction._id);
+    await employer.save();
+
+    // Respond with success
+    res.status(201).json({
+      success: true,
+      message: "Bitcoins received",
+    });
+  } catch (error) {
+    console.error("Error processing webhook:", error);
+
+    return res.status(500).json({
+      success: true,
+      message: "Failed to process webhook",
+    });
   }
 };
