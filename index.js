@@ -8,6 +8,7 @@ import cors from "cors";
 import employerauthRoutes from "./routes/employerAuthRoutes.js";;
 import walletRouter from "./routes/walletsRoutes.js";
 import employeeRoutes from "./routes/employeeRoutes.js";
+import { createWebhookSubscription } from "./helpers/helpers.js";
 
 dotenv.config();
 
@@ -33,15 +34,16 @@ app.use("/v1/api/employee", employeeRoutes);
 // /v1/api/employerauth
 app.use("/v1/api/employerauth", employerauthRoutes);
 
-// /v1/api/auth/
+// /v1/api/waitlist/
 app.use("/v1/api/waitlist", waitListRouter);
 
-// /v1/api/auth/
+// /v1/api/wallet/
 app.use("/v1/api/wallet", walletRouter);
 
 // for notfound 404
 app.use(notFoundMiddleware);
 
 app.listen(port, () => {
+  createWebhookSubscription();
   console.log(`Server is running on port ${port}`);
 });
