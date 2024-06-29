@@ -5,14 +5,14 @@ import dotenv from "dotenv";
 
 export const generatePolygonWallet = async () => {
   try {
-    const walletResponse = await axios.get("/polygon/wallet");
+    const walletResponse = await axios.get("/v3/polygon/wallet");
     const xpub = walletResponse.data.xpub;
     const mnemonic = walletResponse.data.mnemonic;
 
-    const addressResponse = await axios.get(`/polygon/address/${xpub}/0`);
+    const addressResponse = await axios.get(`/v3/polygon/address/${xpub}/0`);
     const walletAddress = addressResponse.data.address;
 
-    const privateKeyResponse = await axios.post(`/polygon/wallet/priv`, {
+    const privateKeyResponse = await axios.post(`/v3/polygon/wallet/priv`, {
       index: 0,
       mnemonic,
     });
@@ -31,7 +31,7 @@ export const generatePolygonWallet = async () => {
 
 export const getWalletPolygonBalance = async (address) => {
   try {
-    const walletResponse = await axios.get(`/polygon/account/balance/${address}`);
+    const walletResponse = await axios.get(`/v3/polygon/account/balance/${address}`);
     return walletResponse.data;
   } catch (error) {
     console.log(error);
@@ -44,7 +44,7 @@ export const getWalletPolygonBalance = async (address) => {
 export const SendPolygon = async (senderPrivateKey, receiverWalletAddress,amount) => {
 
   try {
-    const transactionResponse = await axios.post("/polygon/transaction",{
+    const transactionResponse = await axios.post("/v3/polygon/transaction",{
         currency: 'MATIC',
         to: receiverWalletAddress,
         amount,
@@ -66,7 +66,7 @@ export const SendPolygon = async (senderPrivateKey, receiverWalletAddress,amount
 
 export const getDetailsPolygonTransaction = async (hash) => {
   try {
-    const transactionResponse = await axios.get(`/polygon/transaction/${hash}`);
+    const transactionResponse = await axios.get(`/v3/polygon/transaction/${hash}`);
     return transactionResponse.data;
   } catch (error) {
     return {
