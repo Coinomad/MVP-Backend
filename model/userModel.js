@@ -42,6 +42,14 @@ const employerSchema = new Schema(
       required: true,
       unique: true,
     },
+    subscriptionBTCId: {
+      type: String,
+      default: null,
+    },
+    subscriptionPolygonId: {
+      type: String,
+      default: null,
+    },
     employees: [
       {
         type: Schema.Types.ObjectId,
@@ -96,7 +104,12 @@ const employeeSchema = new Schema(
 // .exec();
 const transactionSchema = new Schema(
   {
-    transactionId: { type: String, required: true, unique: true },
+    transactionId: {
+      type: String,
+      required: true,
+      unique: true,
+      default: null,
+    },
     amount: {
       type: Number,
       required: true,
