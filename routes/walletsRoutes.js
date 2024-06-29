@@ -2,10 +2,12 @@ import express from "express";
 
 import { authMiddleware } from "../middleware/ProtectRoutes.js";
 import {
+  handleIncomingBitcoinTransaction,
   sendBitcoinToAnyone,
   sendBitcoinToEmployee,
 } from "../controllers/walletControllers/bitcoinControllers.js";
 import {
+  handleIncomingPolygonTransaction,
   sendPolygonToAnyone,
   sendPolygonToEmployee,
 } from "../controllers/walletControllers/polygonControllers.js";
@@ -34,6 +36,10 @@ walletRouter.post(
   authMiddleware,
   sendBitcoinToAnyone
 );
+
+walletRouter.post('/receive/bitcoin', handleIncomingBitcoinTransaction);
+
+walletRouter.post('/receive/polygon', handleIncomingPolygonTransaction);
 
 walletRouter.post("/transactions", authMiddleware, getTransactions);
 
