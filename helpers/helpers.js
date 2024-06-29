@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 import cryptoJs from "crypto-js";
+import axios from "axios";
 
 dotenv.config();
 
@@ -82,7 +83,7 @@ export const createWebhookSubscription = async (employer) => {
     const polygonResponse = await axios.post("/v4/subscription", {
       type: "INCOMING_NATIVE_TX",
       attr: {
-        chain: "POLYGON", // Blockchain type
+        chain: "MATIC", // Blockchain type
         address: employer.polygonWalletAddress,
         url: `${SERVER_URL}/v1/api/wallet/receive/polygon`, // Webhook endpoint for Polygon
       },
