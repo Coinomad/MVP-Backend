@@ -138,9 +138,10 @@ export const employerVerfiyEmailSignup = async (req, res) => {
     employer.emailTokenExpires = null;
     employer.active = true;
 
-
+    await employer.save();
     const result = await createWebhookSubscription(employer);
     if (result.error) {
+      console.log(result);
       return res.status(500).json({
         success: false,
         message: `Error registering webhook`,
@@ -292,6 +293,8 @@ export const employerDetails = async (req, res) => {
     employerByEmail.bitcoinWalletAddress = bitcoinWalletResult.walletAddress;
     employerByEmail.polygonWalletAddress = polygonWalletResult.walletAddress;
 
+
+
     // Save the changes
     await employerByEmail.save();
 
@@ -393,13 +396,7 @@ export const employerLogin = async (req, res) => {
     employer.polygonWalletBalance = polygonWalletBalance;
     employer.accessToken = token;
 
-    const result = await createWebhookSubscription(employer);
-    if (result.error) {
-      return res.status(500).json({
-        success: false,
-        message: `Error registering webhook`,
-      });
-    }
+ 
 
     await employer.save();
 
