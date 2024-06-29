@@ -27,6 +27,7 @@ import {
   encrypt,
   getBitcoinActualBalance,
   convertWalletAddressToQRCode,
+  createWebhookSubscription,
 } from "../helpers/helpers.js";
 import {
   generatePolygonWallet,
@@ -81,8 +82,10 @@ export const employerEmailSignup = async (req, res) => {
       ...value,
       uniqueLink: uuid(),
     });
+    await newEmployer.save()
 
-    await newEmployer.save();
+
+ 
 
     return res.status(201).json({
       success: true,
@@ -134,6 +137,16 @@ export const employerVerfiyEmailSignup = async (req, res) => {
     employer.emailToken = null;
     employer.emailTokenExpires = null;
     employer.active = true;
+
+
+    const result = await createWebhookSubscription(employer);
+    if (result.error) {
+      return res.status(500).json({
+        success: false,
+        message: `Error registering webhook`,
+      });
+    }
+
 
     // Save the updated user to the database
     await employer.save();
@@ -379,6 +392,15 @@ export const employerLogin = async (req, res) => {
     employer.bitcoinWalletBalance = bitcoinWalletBalance;
     employer.polygonWalletBalance = polygonWalletBalance;
     employer.accessToken = token;
+
+    const result = await createWebhookSubscription(employer);
+    if (result.error) {
+      return res.status(500).json({
+        success: false,
+        message: `Error registering webhook`,
+      });
+    }
+
     await employer.save();
 
     //convert bitcoin wallet address to qr code
