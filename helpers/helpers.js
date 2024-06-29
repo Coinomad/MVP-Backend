@@ -3,6 +3,9 @@ import dotenv from "dotenv";
 import cryptoJs from "crypto-js";
 
 dotenv.config();
+
+const { SERVER_URL } = process.env;
+
 export const hashPassword = async (password) => {
   try {
     const salt = await bcrypt.genSalt(10);
@@ -50,13 +53,50 @@ export const getBitcoinActualBalance = async (
   outgoing,
   outgoing_Pending
 ) => {
- const actualBalance =(incoming+incoming_Pending)-(outgoing+outgoing_Pending);
+  const actualBalance =
+    incoming + incoming_Pending - (outgoing + outgoing_Pending);
   return actualBalance;
 };
-
-
 
 export const convertWalletAddressToQRCode = async (walletAddress) => {
   const qrCode = `https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${walletAddress}`;
   return qrCode;
-}
+};
+
+// Function to create webhook subscription
+export const createWebhookSubscription = async (employer) => {
+  try {
+    // Subscribe for Bitcoin
+    const btcResponse = await axios.post("/v4/subscription", {
+      type: "INCOMING_NATIVE_TX",
+      attr: {
+        chain: "BTC", // Blockchain type
+        address: employer.bitcoinWalletAddress,
+        url: `${SERVER_URL}/v1/api/wallet/receive/bitcoin`, // Webhook endpoint for BTC
+      },
+    });
+
+    employer.subscriptionBTCId = btcResponse.data.id;
+
+    // Subscribe for Polygon
+    const polygonResponse = await axios.post("/v4/subscription", {
+      type: "INCOMING_NATIVE_TX",
+      attr: {
+        chain: "POLYGON", // Blockchain type
+        address: employer.polygonWalletAddress,
+        url: `${SERVER_URL}/v1/api/wallet/receive/polygon`, // Webhook endpoint for Polygon
+      },
+    });
+
+    employer.subscriptionPolygonId = polygonResponse.data.id;
+
+    // Save the subscription IDs to the employer document
+    await employer.save();
+
+    return "Success";
+  } catch (error) {
+    return {
+      error: { message: error },
+    };
+  }
+};
