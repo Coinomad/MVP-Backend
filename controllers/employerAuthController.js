@@ -370,9 +370,10 @@ export const employerLogin = async (req, res) => {
       employer.bitcoinWalletAddress
     );
     if (bitcoinWalletBalance.error) {
+      console.log("bitcoinWalletBalance.error",bitcoinWalletBalance.error);
       return res.status(500).json({
         success: false,
-        message: `bitcoin wallet balance error:${bitcoinWalletBalance.error.message}`,
+        message: `bitcoin wallet balance error`,
       });
     }
     console.log(bitcoinWalletBalance);
