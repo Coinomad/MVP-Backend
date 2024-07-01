@@ -199,14 +199,19 @@ export const sendPolygonToAnyone = async (req, res) => {
   }
 };
 
-export const handleIncomingPolygonTransaction = async (req, res, walletType) => {
+export const handleIncomingPolygonTransaction = async (
+  req,
+  res,
+  walletType
+) => {
   try {
     const { address, amount, blockNumber, counterAddress, txId, chain } =
       req.body;
 
     // Find the employer associated with the address
     const employer = await Employer.findOne({
-      [`${walletType}WalletAddress`]: address,
+      [`polygonWalletAddress
+      `]: address,
     });
     if (!employer) {
       return res.status(404).json({ error: "Employer not found" });
