@@ -230,7 +230,7 @@ export const sendBitcoinToAnyone = async (req, res) => {
 };
 
 export const handleIncomingBitcoinTransaction = async (req, res, walletType) => {
-  console.log("trigerrng");
+
   try {
     const { address, amount, blockNumber, counterAddress, txId, chain } =
       req.body;
