@@ -155,7 +155,7 @@ export const sendBitcoinToAnyone = async (req, res) => {
     if (actualBalance < value.amount) {
       return res.status(400).json({
         success: false,
-        message: `Insufficient balance to send ${amount} BTC`,
+        message: `Insufficient balance to send ${value.amount} BTC`,
       });
     }
 
@@ -237,7 +237,7 @@ export const handleIncomingBitcoinTransaction = async (req, res, walletType) => 
 
     // Find the employer associated with the address
     const employer = await Employer.findOne({
-      [`bitcoinWalletAddress`]: address,
+      bitcoinWalletAddress: address,
     });
     if (!employer) {
       return res.status(404).json({
