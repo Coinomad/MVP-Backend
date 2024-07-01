@@ -202,7 +202,6 @@ export const sendPolygonToAnyone = async (req, res) => {
 export const handleIncomingPolygonTransaction = async (
   req,
   res,
-  walletType
 ) => {
   try {
     const { address, amount, blockNumber, counterAddress, txId, chain } =
@@ -213,15 +212,19 @@ export const handleIncomingPolygonTransaction = async (
       polygonWalletAddress: address,
     });
     if (!employer) {
-      return res.status(404).json({ error: "Employer not found" });
+      return res.status(404).json({
+        success: false,
+        message: `Employer not found`,
+      });
     }
 
     // Create a new transaction document
+    const senderWalletAddress = counterAddress ? counterAddress : "Unknown";
     const newTransaction = new Transaction({
       transactionId: txId,
       amount: parseFloat(amount),
       walletType: "Polygon", // Dynamic wallet type (BTC or Polygon)
-      senderWalletAddress: counterAddress,
+      senderWalletAddress: senderWalletAddress,
       receiverWalletAddress: address,
       direction: "Incoming",
       status: "Success", // Assuming the transaction is successful as it reached this point
