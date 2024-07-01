@@ -139,18 +139,7 @@ export const employerVerfiyEmailSignup = async (req, res) => {
     employer.active = true;
 
     await employer.save();
-    const result = await createWebhookSubscription(employer);
-    if (result.error) {
-      console.log(result);
-      return res.status(500).json({
-        success: false,
-        message: `Error registering webhook`,
-      });
-    }
 
-
-    // Save the updated user to the database
-    await employer.save();
 
     return res.status(200).json({
       success: true,
@@ -293,9 +282,21 @@ export const employerDetails = async (req, res) => {
     employerByEmail.bitcoinWalletAddress = bitcoinWalletResult.walletAddress;
     employerByEmail.polygonWalletAddress = polygonWalletResult.walletAddress;
 
-
-
     // Save the changes
+    await employerByEmail.save();
+    
+
+    const result = await createWebhookSubscription(employerByEmail);
+    if (result.error) {
+      console.log(result.error);
+      return res.status(500).json({
+        success: false,
+        message: `Error registering webhook`,
+      });
+    }
+
+
+    // Save the updated user to the database
     await employerByEmail.save();
 
     return res.status(201).json({
@@ -374,13 +375,15 @@ export const employerLogin = async (req, res) => {
         message: `bitcoin wallet balance error:${bitcoinWalletBalance.error.message}`,
       });
     }
+    console.log(bitcoinWalletBalance);
 
-    const bitcoinActualBalance = getBitcoinActualBalance(
-      bitcoinWalletBalance.incoming,
-      bitcoinWalletBalance.incomingPending,
-      bitcoinWalletBalance.outgoing,
-      bitcoinWalletBalance.outgoingPending
+    const bitcoinActualBalance = await getBitcoinActualBalance(
+      Number(bitcoinWalletBalance.incoming),
+      Number(bitcoinWalletBalance.incomingPending),
+      Number(bitcoinWalletBalance.outgoing),
+      Number(bitcoinWalletBalance.outgoingPending)
     );
+    console.log(bitcoinActualBalance);
 
     const polygonWalletBalance = await getWalletPolygonBalance(
       employer.polygonWalletAddress
@@ -422,7 +425,7 @@ export const employerLogin = async (req, res) => {
         organizationName: employer.organizationName,
         bitcoinWalletBalance: bitcoinWalletBalance,
         polygonWalletBalance: polygonWalletBalance,
-        bitcoinActualBalance: bitcoinActualBalance,
+        bitcoinTotalBalance: bitcoinActualBalance,
         bitcoinWalletQrCode: employerbitcoinWalletQrCode,
         polygonWalletQrCode: employerPolygonWalletQrCode,
         bitcoinWalletAddress: employer.bitcoinWalletAddress,
