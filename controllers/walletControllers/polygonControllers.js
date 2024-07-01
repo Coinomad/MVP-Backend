@@ -210,8 +210,7 @@ export const handleIncomingPolygonTransaction = async (
 
     // Find the employer associated with the address
     const employer = await Employer.findOne({
-      [`polygonWalletAddress
-      `]: address,
+      polygonWalletAddress: address,
     });
     if (!employer) {
       return res.status(404).json({ error: "Employer not found" });
