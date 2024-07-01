@@ -1,9 +1,9 @@
-import { decrypt } from "../../helpers/helpers.js";
+import { decrypt, getBitcoinActualBalance } from "../../helpers/helpers.js";
 import {
   sendCoinToAnyOneSchema,
   sendCoinToEmployeeSchema,
 } from "../../helpers/validation.js";
-import { SendBTC } from "../../helpers/wallets/btcWallet.js";
+import { getWalletBTCBalance, SendBTC } from "../../helpers/wallets/btcWallet.js";
 import { Employee, Employer, Transaction } from "../../model/userModel.js";
 
 export const sendBitcoinToEmployee = async (req, res) => {
@@ -38,7 +38,7 @@ export const sendBitcoinToEmployee = async (req, res) => {
         message: `Employee with ID ${value.employeeId} does not belong to this employer`,
       });
     }
-    const actualBalance = getBitcoinActualBalance(
+    const actualBalance = await getBitcoinActualBalance(
       employer.bitcoinWalletBalance.incoming,
       employer.bitcoinWalletBalance.incomingPending,
       employer.bitcoinWalletBalance.outgoing,
@@ -91,7 +91,7 @@ export const sendBitcoinToEmployee = async (req, res) => {
     const employerbitcoinWalletBalance = await getWalletBTCBalance(
       employer.bitcoinWalletAddress
     );
-    if (bitcoinWalletBalance.error) {
+    if ( employerbitcoinWalletBalance.error) {
       return res.status(500).json({
         success: false,
         message: `Error getting bitcoin wallet balance`,
@@ -145,7 +145,7 @@ export const sendBitcoinToAnyone = async (req, res) => {
       });
     }
 
-    const actualBalance = getBitcoinActualBalance(
+    const actualBalance = await getBitcoinActualBalance(
       employer.bitcoinWalletBalance.incoming,
       employer.bitcoinWalletBalance.incomingPending,
       employer.bitcoinWalletBalance.outgoing,
@@ -168,7 +168,6 @@ export const sendBitcoinToAnyone = async (req, res) => {
       walletType: "BTC",
       senderWalletAddress: employer.bitcoinWalletAddress,
       receiverWalletAddress: value.receiverWalletAddress,
-
       status: "Pending",
     });
 
@@ -201,7 +200,7 @@ export const sendBitcoinToAnyone = async (req, res) => {
     const employerbitcoinWalletBalance = await getWalletBTCBalance(
       employer.bitcoinWalletAddress
     );
-    if (bitcoinWalletBalance.error) {
+    if (employerbitcoinWalletBalance.error) {
       console.log(response.error);
       return res.status(500).json({
         success: false,
@@ -231,16 +230,20 @@ export const sendBitcoinToAnyone = async (req, res) => {
 };
 
 export const handleIncomingBitcoinTransaction = async (req, res, walletType) => {
+  console.log("trigerrng");
   try {
     const { address, amount, blockNumber, counterAddress, txId, chain } =
       req.body;
 
     // Find the employer associated with the address
     const employer = await Employer.findOne({
-      [`${walletType}WalletAddress`]: address,
+      [`bitcoinWalletAddress`]: address,
     });
     if (!employer) {
-      return res.status(404).json({ error: "Employer not found" });
+      return res.status(404).json({
+        success: false,
+        message: `Employer not found`,
+      });
     }
 
     // Create a new transaction document
