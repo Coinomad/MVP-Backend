@@ -48,7 +48,7 @@ export const sendBitcoinToEmployee = async (req, res) => {
     if (actualBalance < value.amount) {
       return res.status(400).json({
         success: false,
-        message: `Insufficient balance to send ${value.amount} BTC to employee with ID ${value.employeeId}`,
+        message: `Insufficient balance to send ${value.amount} bitcoin`,
       });
     }
 
@@ -155,7 +155,7 @@ export const sendBitcoinToAnyone = async (req, res) => {
     if (actualBalance < value.amount) {
       return res.status(400).json({
         success: false,
-        message: `Insufficient balance to send ${value.amount} BTC`,
+        message: `Insufficient balance to send ${value.amount} bitcoin`,
       });
     }
 
@@ -247,11 +247,13 @@ export const handleIncomingBitcoinTransaction = async (req, res, walletType) => 
     }
 
     // Create a new transaction document
+      // Check if counterAddress is null and handle it accordingly
+  const senderWalletAddress = counterAddress ? counterAddress : "Unknown";
     const newTransaction = new Transaction({
       transactionId: txId,
       amount: parseFloat(amount),
       walletType:"BTC", // Dynamic wallet type (BTC or Polygon)
-      senderWalletAddress: counterAddress,
+      senderWalletAddress,
       receiverWalletAddress: address,
       receiverName: employer.organizationName, // Optional: Add employer info if needed
       direction: "Incoming",
@@ -274,8 +276,8 @@ export const handleIncomingBitcoinTransaction = async (req, res, walletType) => 
     console.error("Error processing webhook:", error);
 
     return res.status(500).json({
-      success:false,
-      message: error,
+      success: failed,
+      message: "Failed to process webhook",
     });
   }
 };
