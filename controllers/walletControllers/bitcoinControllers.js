@@ -274,8 +274,8 @@ export const handleIncomingBitcoinTransaction = async (req, res, walletType) => 
     console.error("Error processing webhook:", error);
 
     return res.status(500).json({
-      success: true,
-      message: "Failed to process webhook",
+      success:false,
+      message: error,
     });
   }
 };
