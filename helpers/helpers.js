@@ -55,7 +55,7 @@ export const getBitcoinActualBalance = async (
   outgoing_Pending
 ) => {
   const actualBalance =
-    incoming + incoming_Pending - (outgoing + outgoing_Pending);
+    (Number(incoming) + Number(incoming_Pending)) - (Number(outgoing) + Number(outgoing_Pending));
   return actualBalance;
 };
 
