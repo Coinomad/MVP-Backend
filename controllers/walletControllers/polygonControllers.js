@@ -20,7 +20,10 @@ export const sendPolygonToEmployee = async (req, res) => {
 
     const employer = await Employer.findById(employerId).populate("employees");
     if (!employer) {
-      return res.status(404).json({ message: "Employer not found" });
+       return res.status(404).json({
+        success: false,
+        message: `Employer not found`,
+      });
     }
 
     const employee = await Employee.findById(value.employeeId);
@@ -70,7 +73,7 @@ export const sendPolygonToEmployee = async (req, res) => {
       await transaction.save();
       return res.status(500).json({
         success: false,
-        message: `Transaction failed: ${response.error.message}`,
+        message: `Transaction failed`,
       });
     }
 
@@ -121,7 +124,10 @@ export const sendPolygonToAnyone = async (req, res) => {
 
     const employer = await Employer.findById(employerId);
     if (!employer) {
-      return res.status(404).json({ message: "Employer not found" });
+       return res.status(404).json({
+        success: false,
+        message: `Employer not found`,
+      });
     }
 
     const actualBalance = employer.polygonBalance;
