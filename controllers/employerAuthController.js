@@ -270,7 +270,7 @@ export const employerDetails = async (req, res) => {
       bitcoinWalletResult.privateKey
     );
     const encryptploygonWalletPrivateKey = encrypt(
-      bitcoinWalletResult.privateKey
+      polygonWalletResult.privateKey
     );
 
     employerByEmail.firstName = value.firstName;
