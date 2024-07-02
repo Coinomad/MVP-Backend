@@ -47,7 +47,7 @@ export const SendPolygon = async (senderPrivateKey, receiverWalletAddress,amount
     const transactionResponse = await axios.post("/v3/polygon/transaction",{
         currency: 'MATIC',
         to: receiverWalletAddress,
-        amount,
+        amount:amount.toString(),
         fromPrivateKey: senderPrivateKey,
        
       });
