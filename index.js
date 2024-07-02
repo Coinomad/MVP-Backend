@@ -37,6 +37,7 @@ app.use("/v1/api/employerauth", employerauthRoutes);
 // /v1/api/waitlist/
 app.use("/v1/api/waitlist", waitListRouter);
 
+
 // /v1/api/wallet/
 app.use("/v1/api/wallet", walletRouter);
 

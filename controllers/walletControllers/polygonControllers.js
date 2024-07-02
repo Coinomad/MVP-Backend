@@ -1,3 +1,4 @@
+import { decrypt } from "../../helpers/helpers.js";
 import {
   sendCoinToAnyOneSchema,
   sendCoinToEmployeeSchema,
@@ -7,7 +8,7 @@ import { Employee, Employer, Transaction } from "../../model/userModel.js";
 
 export const sendPolygonToEmployee = async (req, res) => {
   const employerId = req.user.id;
-
+  console.log("coole");
   try {
     const { value, error } = sendCoinToEmployeeSchema.validate(req.body);
     if (error) {
@@ -20,7 +21,7 @@ export const sendPolygonToEmployee = async (req, res) => {
 
     const employer = await Employer.findById(employerId).populate("employees");
     if (!employer) {
-       return res.status(404).json({
+      return res.status(404).json({
         success: false,
         message: `Employer not found`,
       });
@@ -49,13 +50,18 @@ export const sendPolygonToEmployee = async (req, res) => {
     }
 
     const decryptedPrivateKey = decrypt(employer.polygonWalletprivateKey);
-
+    console.log(
+      "decryptedPrivateKeyemployee.walletAddressvalue.amount",
+      decryptedPrivateKey,
+      employee.walletAddress,
+      value.amount
+    );
     const transaction = new Transaction({
       transactionId: null,
       amount: value.amount,
       walletType: "Polygon",
       senderWalletAddress: employer.polygonWalletAddress,
-      receiverWalletAddress: employee.polygonWalletAddress,
+      receiverWalletAddress: employee.walletAddress,
       status: "Pending",
       receiverName: employee.name,
     });
@@ -64,11 +70,12 @@ export const sendPolygonToEmployee = async (req, res) => {
 
     const response = await SendPolygon(
       decryptedPrivateKey,
-      employee.polygonWalletAddress,
+      employee.walletAddress,
       value.amount
     );
 
     if (response.error) {
+      console.log(response.error);
       transaction.status = "Failed";
       await transaction.save();
       return res.status(500).json({
@@ -124,7 +131,7 @@ export const sendPolygonToAnyone = async (req, res) => {
 
     const employer = await Employer.findById(employerId);
     if (!employer) {
-       return res.status(404).json({
+      return res.status(404).json({
         success: false,
         message: `Employer not found`,
       });
@@ -205,10 +212,7 @@ export const sendPolygonToAnyone = async (req, res) => {
   }
 };
 
-export const handleIncomingPolygonTransaction = async (
-  req,
-  res,
-) => {
+export const handleIncomingPolygonTransaction = async (req, res) => {
   try {
     const { address, amount, blockNumber, counterAddress, txId, chain } =
       req.body;
