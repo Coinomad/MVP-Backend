@@ -42,6 +42,7 @@ export const getWalletPolygonBalance = async (address) => {
 };
 
 export const SendPolygon = async (senderPrivateKey, receiverWalletAddress,amount) => {
+  console.log("senderPrivateKey",senderPrivateKey);
 
   try {
     const transactionResponse = await axios.post("/v3/polygon/transaction",{
