@@ -57,7 +57,7 @@ export const SendPolygon = async (senderPrivateKey, receiverWalletAddress,amount
     return transactionResponse.data;
   } catch (error) {
     return {
-      error: { message: error },
+      error: { message: error.message },
     };
   }
 };
