@@ -41,6 +41,6 @@ walletRouter.post('/receive/bitcoin', handleIncomingBitcoinTransaction);
 
 walletRouter.post('/receive/polygon', handleIncomingPolygonTransaction);
 
-walletRouter.post("/transactions", authMiddleware, getTransactions);
+walletRouter.get("/transactions", authMiddleware, getTransactions);
 
 export default walletRouter;
