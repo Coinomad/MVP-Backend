@@ -170,11 +170,12 @@ export const sendPolygonToAnyone = async (req, res) => {
     // Update transaction with transaction ID
     if (response.error) {
       transaction.status = "Failed";
+      console.log("response.error.message", response.error.message);
       await transaction.save();
       return res.status(500).json({
         success: false,
         message: "Transaction failed",
-        error: response.error.message,
+        error: "Insufficient balance",
       });
     }
     transaction.transactionId = response.txId;
@@ -202,8 +203,9 @@ export const sendPolygonToAnyone = async (req, res) => {
       success: true,
       message: "Transaction successful",
       data: {
+        success: true,
+        message: "Transaction successful",
         transactionId: transaction.transactionId,
-        transaction,
       },
     });
   } catch (error) {
