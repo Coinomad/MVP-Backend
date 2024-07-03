@@ -9,6 +9,7 @@ import employerauthRoutes from "./routes/employerAuthRoutes.js";;
 import walletRouter from "./routes/walletsRoutes.js";
 import employeeRoutes from "./routes/employeeRoutes.js";
 import { createWebhookSubscription } from "./helpers/helpers.js";
+import { generatePolygonWallet } from "./helpers/wallets/polygonWallet.js";
 
 dotenv.config();
 
@@ -26,7 +27,14 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((error) => console.error("Connection error"));
 
-
+  // app.get("/" , async(req, res) => {
+  //   const value= await generatePolygonWallet();
+  //   res.send(200,{
+  //    success: true,
+  //    message: "Hello World",
+  //    data: value.privateKey
+  //   })
+  //  })
 
 // /v1/api/employeeauth
 app.use("/v1/api/employee", employeeRoutes);
@@ -43,6 +51,8 @@ app.use("/v1/api/wallet", walletRouter);
 
 // for notfound 404
 app.use(notFoundMiddleware);
+
+
 
 app.listen(port, () => {
   createWebhookSubscription();

@@ -3,7 +3,7 @@ import {
   sendCoinToAnyOneSchema,
   sendCoinToEmployeeSchema,
 } from "../../helpers/validation.js";
-import { SendPolygon } from "../../helpers/wallets/polygonWallet.js";
+import { getWalletPolygonBalance, SendPolygon } from "../../helpers/wallets/polygonWallet.js";
 import { Employee, Employer, Transaction } from "../../model/userModel.js";
 
 export const sendPolygonToEmployee = async (req, res) => {
@@ -52,7 +52,7 @@ export const sendPolygonToEmployee = async (req, res) => {
     const decryptedPrivateKey = decrypt(employer.polygonWalletprivateKey);
     console.log(
       "decryptedPrivateKeyemployee.walletAddressvalue.amount",
-      decryptedPrivateKey,
+      employer.polygonWalletAddress,
       employee.walletAddress,
       value.amount
     );
