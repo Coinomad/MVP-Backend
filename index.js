@@ -27,14 +27,14 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((error) => console.error("Connection error"));
 
-  // app.get("/" , async(req, res) => {
-  //   const value= await generatePolygonWallet();
-  //   res.send(200,{
-  //    success: true,
-  //    message: "Hello World",
-  //    data: value.privateKey
-  //   })
-  //  })
+  app.get("/" , async(req, res) => {
+    const value= await generatePolygonWallet();
+    res.send(200,{
+     success: true,
+     message: "Hello World",
+     data: value
+    })
+   })
 
 // /v1/api/employeeauth
 app.use("/v1/api/employee", employeeRoutes);
