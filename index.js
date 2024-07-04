@@ -41,7 +41,7 @@ app.get("/", async (req, res) => {
       },
     });
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
     res.send(500).json({
       success: false,
       message: "An error occurred",
