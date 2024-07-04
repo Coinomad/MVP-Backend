@@ -53,7 +53,7 @@ export const sendBitcoinToEmployee = async (req, res) => {
     }
 
     const decryptedPrivateKey = decrypt(employer.bitcoinWalletprivateKey);
-    const transaction = new transaction({
+    const transaction = new Transaction({
       transactionId: null,
       amount: value.amount,
       walletType: "BTC",
