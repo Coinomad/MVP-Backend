@@ -5,11 +5,12 @@ import { notFoundMiddleware } from "./middleware/notFoundMiddleware.js";
 import mongoose from "mongoose";
 import waitListRouter from "./routes/waitListRoute.js";
 import cors from "cors";
-import employerauthRoutes from "./routes/employerAuthRoutes.js";;
+import employerauthRoutes from "./routes/employerAuthRoutes.js";
 import walletRouter from "./routes/walletsRoutes.js";
 import employeeRoutes from "./routes/employeeRoutes.js";
 import { createWebhookSubscription } from "./helpers/helpers.js";
 import { generatePolygonWallet } from "./helpers/wallets/polygonWallet.js";
+import { generateBTCWallet } from "./helpers/wallets/btcWallet.js";
 
 dotenv.config();
 
@@ -27,14 +28,18 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((error) => console.error("Connection error"));
 
-  app.get("/" , async(req, res) => {
-    const value= await generatePolygonWallet();
-    res.send(200,{
-     success: true,
-     message: "Hello World",
-     data: value
-    })
-   })
+app.get("/", async (req, res) => {
+  const value1 = await generatePolygonWallet();
+  const value2 = await generateBTCWallet();
+  res.send(200, {
+    success: true,
+    message: "Hello World",
+    data: {
+      polygon:value1,
+      btc:value2
+    },
+  });
+});
 
 // /v1/api/employeeauth
 app.use("/v1/api/employee", employeeRoutes);
@@ -45,14 +50,11 @@ app.use("/v1/api/employerauth", employerauthRoutes);
 // /v1/api/waitlist/
 app.use("/v1/api/waitlist", waitListRouter);
 
-
 // /v1/api/wallet/
 app.use("/v1/api/wallet", walletRouter);
 
 // for notfound 404
 app.use(notFoundMiddleware);
-
-
 
 app.listen(port, () => {
   createWebhookSubscription();
