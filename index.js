@@ -29,16 +29,24 @@ mongoose
   .catch((error) => console.error("Connection error"));
 
 app.get("/", async (req, res) => {
+try {
   const value1 = await generatePolygonWallet();
   const value2 = await generateBTCWallet();
-  res.send(200, {
+  res.send(200).json({
     success: true,
-    message: "Hello World",
+    message: "Wallets generated successfully",
     data: {
-      polygon:value1,
-      btc:value2
-    },
+      polygonWallet: value1,
+      btcWallet: value2
+    }
   });
+} catch (error) {
+  console.log(error.message);
+  res.send(500).json({
+    success: false,
+    message: "An error occurred",
+  })
+}
 });
 
 // /v1/api/employeeauth
