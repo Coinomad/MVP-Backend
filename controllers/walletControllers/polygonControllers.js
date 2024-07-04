@@ -108,7 +108,10 @@ export const sendPolygonToEmployee = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Transaction successful",
-      transactionId: transaction.transactionId,
+      data: {
+        transactionId: transaction.transactionId,
+        transaction,
+      },
     });
   } catch (error) {
     console.log(error);
@@ -203,9 +206,8 @@ export const sendPolygonToAnyone = async (req, res) => {
       success: true,
       message: "Transaction successful",
       data: {
-        success: true,
-        message: "Transaction successful",
         transactionId: transaction.transactionId,
+        transaction,
       },
     });
   } catch (error) {
