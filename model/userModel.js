@@ -96,12 +96,7 @@ const employeeSchema = new Schema(
     },
   }
 );
-// const transaction = await Transaction.findById(transactionId)
-// .populate({
-//   path: 'receiver',
-//   match: { role: 'Employer' } // Replace with actual condition relevant to your Employer model
-// })
-// .exec();
+
 const transactionSchema = new Schema(
   {
     transactionId: {
@@ -157,6 +152,59 @@ const transactionSchema = new Schema(
   }
 );
 
+const scheduleSchema = new Schema(
+  {
+    employer: {
+      type: Schema.Types.ObjectId,
+      ref: "Employer",
+    },
+    frequency: {
+      type: String,
+      enum: ["Daily", "Weekly", "Monthly"],
+      required: true,
+    },
+    time: {
+      type: String,
+      required: true,
+    },
+    day: {
+      type: String,
+      enum: [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+      ],
+      required: true,
+    },
+
+    status: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+
+    amount: {
+      type: Number,
+      default: 0,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now(),
+    },
+  },
+  {
+    timestamps: {
+      createdAt: "createdAt",
+      updatedAt: "updatedAt",
+    },
+  }
+);
+
 export const Employer = mongoose.model("Employer", employerSchema);
 export const Employee = mongoose.model("Employee", employeeSchema);
 export const Transaction = mongoose.model("Transaction", transactionSchema);
+export const Schedule = mongoose.model("Schedule", scheduleSchema);
