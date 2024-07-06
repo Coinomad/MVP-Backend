@@ -146,7 +146,8 @@ const transactionSchema = new Schema(
     amountInUSD: {
       type: Number,
       default: 0,
-  },
+      required: true,
+    },
   },
   {
     timestamps: {
