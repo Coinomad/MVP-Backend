@@ -1,5 +1,6 @@
 import {
   generateBTCWallet,
+  getCryptoPriceInUSD,
   getWalletBTCBalance,
 } from "../helpers/wallets/btcWallet.js";
 import { generateJwt } from "../helpers/generateJwt.js";
@@ -421,6 +422,7 @@ export const employerLogin = async (req, res) => {
         message: `bitcoin wallet error`,
       });
     }
+    const dollarBitcoinBalance  = parseFloat(bitcoinAmountInDollars) *  bitcoinActualBalance;
 
     const polygonAmountInDollars = await getCryptoPriceInUSD("MATIC");
     if (polygonAmountInDollars.error) {
@@ -429,6 +431,8 @@ export const employerLogin = async (req, res) => {
         message: `polygon wallet error`,
       });
     }
+    const dollarMaticBalance  = parseFloat(bitcoinAmountInDollars) *   polygonWalletBalance;
+
     // Return success response
     return res.status(200).json({
       success: true,
@@ -450,6 +454,8 @@ export const employerLogin = async (req, res) => {
         polygonWalletprivateKey: employer.polygonWalletprivateKey,
         polygonAmountInDollars,
         bitcoinAmountInDollars,
+        dollarBitcoinBalance,
+        dollarMaticBalance,
         uniqueLink: employer.uniqueLink,
 
       },
