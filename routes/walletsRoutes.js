@@ -11,7 +11,7 @@ import {
   sendPolygonToAnyone,
   sendPolygonToEmployee,
 } from "../controllers/walletControllers/polygonControllers.js";
-import { getTransactions } from "../controllers/transactionsController.js";
+import { getBalance, getTransactions } from "../controllers/transactionsController.js";
 
 const walletRouter = express.Router();
 
@@ -42,5 +42,7 @@ walletRouter.post('/receive/bitcoin', handleIncomingBitcoinTransaction);
 walletRouter.post('/receive/polygon', handleIncomingPolygonTransaction);
 
 walletRouter.get("/transactions", authMiddleware, getTransactions);
+
+walletRouter.get("/balance", authMiddleware, getBalance);
 
 export default walletRouter;
