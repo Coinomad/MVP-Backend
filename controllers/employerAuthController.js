@@ -385,7 +385,7 @@ export const employerLogin = async (req, res) => {
     if (polygonWalletBalance.error) {
       return res.status(500).json({
         success: false,
-        message: `polygon wallet error:${polygonWalletBalance.error.message}`,
+        message: `polygon wallet error`,
       });
     }
 
@@ -405,27 +405,7 @@ export const employerLogin = async (req, res) => {
       employer.polygonWalletAddress
     );
 
-    const bitcoinAmountInDollars = await getCryptoPriceInUSD("BTC");
-    if (bitcoinAmountInDollars.error) {
-      return res.status(500).json({
-        success: false,
-        message: `bitcoin wallet error`,
-      });
-    }
-    const dollarBitcoinBalance =
-      parseFloat(bitcoinAmountInDollars) * bitcoinActualBalance;
-
-    const polygonAmountInDollars = await getCryptoPriceInUSD("MATIC");
-    if (polygonAmountInDollars.error) {
-      console.log("polygonAmountInDollars.error", polygonAmountInDollars.error);
-      return res.status(500).json({
-        success: false,
-        message: `polygon wallet error`,
-      });
-    }
-    const dollarMaticBalance =
-      parseFloat(polygonAmountInDollars) * polygonWalletBalance.balance;
-
+ 
     // Return success response
     return res.status(200).json({
       success: true,
@@ -445,10 +425,6 @@ export const employerLogin = async (req, res) => {
         polygonWalletAddress: employer.polygonWalletAddress,
         bitcoinWalletprivateKey: employer.bitcoinWalletprivateKey,
         polygonWalletprivateKey: employer.polygonWalletprivateKey,
-        polygonAmountInDollars,
-        bitcoinAmountInDollars,
-        dollarBitcoinBalance,
-        dollarMaticBalance,
         uniqueLink: employer.uniqueLink,
       },
     });
