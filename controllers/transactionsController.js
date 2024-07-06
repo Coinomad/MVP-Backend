@@ -21,6 +21,7 @@ export const getTransactions = async (req, res) => {
       message: "Transaction successful",
       data: fetchedTransactions.transactions.map((transaction, index) => ({
         senderWalletAddress: transaction.senderWalletAddress,
+        amountInUSD: transaction.amountInUSD,
         receiverWalletAddress: transaction.receiverWalletAddress,
         amount: transaction.amount,
         asset: transaction.walletType,
