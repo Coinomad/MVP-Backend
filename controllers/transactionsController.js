@@ -1,5 +1,8 @@
 import { getBitcoinActualBalance } from "../helpers/helpers.js";
-import { getCryptoPriceInUSD, getWalletBTCBalance } from "../helpers/wallets/btcWallet.js";
+import {
+  getCryptoPriceInUSD,
+  getWalletBTCBalance,
+} from "../helpers/wallets/btcWallet.js";
 import { getWalletPolygonBalance } from "../helpers/wallets/polygonWallet.js";
 import { Employer } from "../model/userModel.js";
 
@@ -35,7 +38,10 @@ export const getTransactions = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Server error. Please try again later.",
+    });
   }
 };
 
@@ -96,16 +102,19 @@ export const getBalance = async (req, res) => {
       success: true,
       message: "Transaction successful",
       data: {
-        polygonAmountInDollars:Number(polygonAmountInDollars),
-        bitcoinAmountInDollars:Number(bitcoinAmountInDollars),
+        polygonAmountInDollars: Number(polygonAmountInDollars),
+        bitcoinAmountInDollars: Number(bitcoinAmountInDollars),
         dollarBitcoinBalance,
         dollarMaticBalance,
-        bitcoinWalletBalance:  bitcoinActualBalance,
+        bitcoinWalletBalance: bitcoinActualBalance,
         polygonWalletBalance: Number(polygonWalletBalance.balance),
       },
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Server error. Please try again later.",
+    });
   }
 };

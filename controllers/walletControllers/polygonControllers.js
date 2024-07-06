@@ -85,6 +85,8 @@ export const sendPolygonToEmployee = async (req, res) => {
       console.log(response.error);
       transaction.status = "Failed";
       await transaction.save();
+      employer.transactions.push(transaction._id);
+      await employer.save();  
       return res.status(500).json({
         success: false,
         message: `Transaction failed`,
@@ -189,14 +191,16 @@ export const sendPolygonToAnyone = async (req, res) => {
     // Update transaction with transaction ID
     if (response.error) {
       transaction.status = "Failed";
-      console.log("response.error.message", response.error.message);
       await transaction.save();
+      employer.transactions.push(transaction._id);
+      await employer.save();  
       return res.status(500).json({
         success: false,
         message: "Transaction failed",
         error: "Insufficient balance",
       });
     }
+
     transaction.transactionId = response.txId;
     transaction.status = "Success";
     await transaction.save();

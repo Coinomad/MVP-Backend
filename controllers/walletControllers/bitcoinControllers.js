@@ -88,6 +88,8 @@ export const sendBitcoinToEmployee = async (req, res) => {
     if (response.error) {
       transaction.status = "Failed";
       await transaction.save();
+      employer.transactions.push(transaction._id);
+      await employer.save();
       console.log(response.error);
       return res.status(500).json({
         success: false,
@@ -206,6 +208,8 @@ export const sendBitcoinToAnyone = async (req, res) => {
     if (response.error) {
       transaction.status = "Failed";
       await transaction.save();
+      employer.transactions.push(transaction._id);
+      await employer.save();
       console.log(response.error);
       return res.status(500).json({
         success: false,
