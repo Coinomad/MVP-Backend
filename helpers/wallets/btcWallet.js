@@ -38,7 +38,9 @@ export const generateBTCWallet = async () => {
 
 export const getWalletBTCBalance = async (address) => {
   try {
-    const walletResponse = await axios.get(`/v3/bitcoin/address/balance/${address}`);
+    const walletResponse = await axios.get(
+      `/v3/bitcoin/address/balance/${address}`
+    );
     return walletResponse.data;
   } catch (error) {
     console.log(error);
@@ -64,16 +66,26 @@ export const SendBTC = async (sender, receiver) => {
   }
 };
 
-
-
-
 export const getDetailsBTCTransaction = async (hash) => {
-
   try {
-    const transactionResponse = await axios.get(`/v3/bitcoin/transaction/${hash}`);
+    const transactionResponse = await axios.get(
+      `/v3/bitcoin/transaction/${hash}`
+    );
 
     return transactionResponse.data;
   } catch (error) {
+    return {
+      error: { message: error },
+    };
+  }
+};
+
+export const getCryptoPriceInUSD = async (symbol) => {
+  try {
+    const response = await axios.get(`v3/ticker/price/${symbol}/USD`);
+    return response.data.price;
+  } catch (error) {
+    console.error(`Error fetching price for ${symbol}:`, error.message);
     return {
       error: { message: error },
     };
