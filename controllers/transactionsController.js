@@ -99,6 +99,8 @@ export const getBalance = async (req, res) => {
         bitcoinAmountInDollars:Number(bitcoinAmountInDollars),
         dollarBitcoinBalance,
         dollarMaticBalance,
+        bitcoinWalletBalance:  bitcoinActualBalance,
+        polygonWalletBalance: Number(polygonWalletBalance.balance),
       },
     });
   } catch (error) {
