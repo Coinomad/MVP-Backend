@@ -414,6 +414,21 @@ export const employerLogin = async (req, res) => {
       employer.polygonWalletAddress
     );
 
+    const bitcoinAmountInDollars = await getCryptoPriceInUSD("BTC");
+    if (bitcoinAmountInDollars.error) {
+      return res.status(500).json({
+        success: false,
+        message: `bitcoin wallet error`,
+      });
+    }
+
+    const polygonAmountInDollars = await getCryptoPriceInUSD("MATIC");
+    if (polygonAmountInDollars.error) {
+      return res.status(500).json({
+        success: false,
+        message: `polygon wallet error`,
+      });
+    }
     // Return success response
     return res.status(200).json({
       success: true,
@@ -433,10 +448,13 @@ export const employerLogin = async (req, res) => {
         polygonWalletAddress: employer.polygonWalletAddress,
         bitcoinWalletprivateKey: employer.bitcoinWalletprivateKey,
         polygonWalletprivateKey: employer.polygonWalletprivateKey,
+        polygonAmountInDollars,
+        bitcoinAmountInDollars,
         uniqueLink: employer.uniqueLink,
+
       },
     });
-    bitcoin;
+   
   } catch (err) {
     console.error("Login error", err);
     return res.status(500).json({
