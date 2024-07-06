@@ -80,12 +80,12 @@ export const getDetailsBTCTransaction = async (hash) => {
   }
 };
 
-export const getCryptoPriceInUSD = async (symbol) => {
+export const getCryptoPriceInUSD = async (currency) => {
   try {
-    const response = await axios.get(`v3/ticker/price/${symbol}/USD`);
-    return response.data.price;
+    const response = await axios.get(`v3/tatum/rate/${currency}?basePair=USD`);
+    return response.data.value;
   } catch (error) {
-    console.error(`Error fetching price for ${symbol}:`, error.message);
+    console.error(`Error fetching price for ${currency}:`, error.message);
     return {
       error: { message: error },
     };

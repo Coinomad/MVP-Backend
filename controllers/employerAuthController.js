@@ -83,10 +83,7 @@ export const employerEmailSignup = async (req, res) => {
       ...value,
       uniqueLink: uuid(),
     });
-    await newEmployer.save()
-
-
- 
+    await newEmployer.save();
 
     return res.status(201).json({
       success: true,
@@ -140,7 +137,6 @@ export const employerVerfiyEmailSignup = async (req, res) => {
     employer.active = true;
 
     await employer.save();
-
 
     return res.status(200).json({
       success: true,
@@ -285,7 +281,6 @@ export const employerDetails = async (req, res) => {
 
     // Save the changes
     await employerByEmail.save();
-    
 
     const result = await createWebhookSubscription(employerByEmail);
     if (result.error) {
@@ -295,7 +290,6 @@ export const employerDetails = async (req, res) => {
         message: `Error registering webhook`,
       });
     }
-
 
     // Save the updated user to the database
     await employerByEmail.save();
@@ -371,13 +365,12 @@ export const employerLogin = async (req, res) => {
       employer.bitcoinWalletAddress
     );
     if (bitcoinWalletBalance.error) {
-      console.log("bitcoinWalletBalance.error",bitcoinWalletBalance.error);
+      console.log("bitcoinWalletBalance.error", bitcoinWalletBalance.error);
       return res.status(500).json({
         success: false,
         message: `bitcoin wallet balance error`,
       });
     }
-    console.log(bitcoinWalletBalance);
 
     const bitcoinActualBalance = await getBitcoinActualBalance(
       Number(bitcoinWalletBalance.incoming),
@@ -385,7 +378,6 @@ export const employerLogin = async (req, res) => {
       Number(bitcoinWalletBalance.outgoing),
       Number(bitcoinWalletBalance.outgoingPending)
     );
-    console.log(bitcoinActualBalance);
 
     const polygonWalletBalance = await getWalletPolygonBalance(
       employer.polygonWalletAddress
@@ -400,8 +392,6 @@ export const employerLogin = async (req, res) => {
     employer.bitcoinWalletBalance = bitcoinWalletBalance;
     employer.polygonWalletBalance = polygonWalletBalance;
     employer.accessToken = token;
-
- 
 
     await employer.save();
 
@@ -422,16 +412,19 @@ export const employerLogin = async (req, res) => {
         message: `bitcoin wallet error`,
       });
     }
-    const dollarBitcoinBalance  = parseFloat(bitcoinAmountInDollars) *  bitcoinActualBalance;
+    const dollarBitcoinBalance =
+      parseFloat(bitcoinAmountInDollars) * bitcoinActualBalance;
 
     const polygonAmountInDollars = await getCryptoPriceInUSD("MATIC");
     if (polygonAmountInDollars.error) {
+      console.log("polygonAmountInDollars.error", polygonAmountInDollars.error);
       return res.status(500).json({
         success: false,
         message: `polygon wallet error`,
       });
     }
-    const dollarMaticBalance  = parseFloat(bitcoinAmountInDollars) *   polygonWalletBalance;
+    const dollarMaticBalance =
+      parseFloat(polygonAmountInDollars) * polygonWalletBalance.balance;
 
     // Return success response
     return res.status(200).json({
@@ -457,10 +450,8 @@ export const employerLogin = async (req, res) => {
         dollarBitcoinBalance,
         dollarMaticBalance,
         uniqueLink: employer.uniqueLink,
-
       },
     });
-   
   } catch (err) {
     console.error("Login error", err);
     return res.status(500).json({
