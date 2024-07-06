@@ -32,7 +32,7 @@ app.get("/", async (req, res) => {
   try {
     const value1 = await generatePolygonWallet();
     const value2 = await generateBTCWallet();
-    res.send(200).json({
+    res.status(200).json({
       success: true,
       message: "Wallets generated successfully",
       data: {
@@ -42,7 +42,7 @@ app.get("/", async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.send(500).json({
+    res.status(500).json({
       success: false,
       message: "An error occurred",
     });
