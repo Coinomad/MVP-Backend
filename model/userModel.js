@@ -143,6 +143,10 @@ const transactionSchema = new Schema(
       enum: ["Pending", "Success", "Failed"],
       default: "Pending",
     },
+    amountInUSD: {
+      type: Number,
+      default: 0,
+  },
   },
   {
     timestamps: {
