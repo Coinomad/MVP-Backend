@@ -3,7 +3,11 @@ import {
   sendCoinToAnyOneSchema,
   sendCoinToEmployeeSchema,
 } from "../../helpers/validation.js";
-import { getWalletPolygonBalance, SendPolygon } from "../../helpers/wallets/polygonWallet.js";
+import { getCryptoPriceInUSD } from "../../helpers/wallets/btcWallet.js";
+import {
+  getWalletPolygonBalance,
+  SendPolygon,
+} from "../../helpers/wallets/polygonWallet.js";
 import { Employee, Employer, Transaction } from "../../model/userModel.js";
 
 export const sendPolygonToEmployee = async (req, res) => {
@@ -50,12 +54,14 @@ export const sendPolygonToEmployee = async (req, res) => {
     }
 
     const decryptedPrivateKey = decrypt(employer.polygonWalletprivateKey);
-    console.log(
-      "decryptedPrivateKeyemployee.walletAddressvalue.amount",
-      employer.polygonWalletAddress,
-      employee.walletAddress,
-      value.amount
-    );
+    const rate = await getCryptoPriceInUSD("MATIC");
+    if (rate.error) {
+      return res.status(500).json({
+        success: false,
+        message: `Error getting exchange rate`,
+      });
+    }
+    const amountInUSD = value.amount * rate;
     const transaction = new Transaction({
       transactionId: null,
       amount: value.amount,
@@ -64,6 +70,7 @@ export const sendPolygonToEmployee = async (req, res) => {
       receiverWalletAddress: employee.walletAddress,
       status: "Pending",
       receiverName: employee.name,
+      amountInUSD: amountInUSD,
     });
 
     await transaction.save();
@@ -151,6 +158,14 @@ export const sendPolygonToAnyone = async (req, res) => {
 
     const decryptedPrivateKey = decrypt(employer.polygonWalletprivateKey);
 
+    const rate = await getCryptoPriceInUSD("MATIC");
+    if (rate.error) {
+      return res.status(500).json({
+        success: false,
+        message: `Error getting exchange rate`,
+      });
+    }
+    const amountInUSD = value.amount * rate;
     // Create and save the transaction record
     const transaction = new Transaction({
       transactionId: null,
@@ -159,6 +174,7 @@ export const sendPolygonToAnyone = async (req, res) => {
       senderWalletAddress: employer.polygonWalletAddress,
       receiverWalletAddress: value.receiverWalletAddress,
       status: "Pending",
+      amountInUSD: amountInUSD,
     });
 
     await transaction.save();
@@ -232,6 +248,14 @@ export const handleIncomingPolygonTransaction = async (req, res) => {
       });
     }
 
+    const rate = await getCryptoPriceInUSD("MATIC");
+    if (rate.error) {
+      return res.status(500).json({
+        success: false,
+        message: `Error getting exchange rate`,
+      });
+    }
+    const amountInUSD = amount * rate;
     // Create a new transaction document
     const senderWalletAddress = counterAddress ? counterAddress : "Unknown";
     const newTransaction = new Transaction({
@@ -241,6 +265,7 @@ export const handleIncomingPolygonTransaction = async (req, res) => {
       senderWalletAddress: senderWalletAddress,
       receiverWalletAddress: address,
       direction: "Incoming",
+      amountInUSD: amountInUSD,
       status: "Success", // Assuming the transaction is successful as it reached this point
     });
 

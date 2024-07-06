@@ -3,7 +3,7 @@ import {
   sendCoinToAnyOneSchema,
   sendCoinToEmployeeSchema,
 } from "../../helpers/validation.js";
-import { getWalletBTCBalance, SendBTC } from "../../helpers/wallets/btcWallet.js";
+import { getCryptoPriceInUSD, getWalletBTCBalance, SendBTC } from "../../helpers/wallets/btcWallet.js";
 import { Employee, Employer, Transaction } from "../../model/userModel.js";
 
 export const sendBitcoinToEmployee = async (req, res) => {
@@ -53,6 +53,16 @@ export const sendBitcoinToEmployee = async (req, res) => {
     }
 
     const decryptedPrivateKey = decrypt(employer.bitcoinWalletprivateKey);
+
+    const rate = await getCryptoPriceInUSD('BTC');
+    if(rate.error){
+      return res.status(500).json({
+        success: false,
+        message: `Error getting exchange rate`,
+      })
+    }
+    const amountInUSD = value.amount * rate;
+
     const transaction = new Transaction({
       transactionId: null,
       amount: value.amount,
@@ -61,6 +71,7 @@ export const sendBitcoinToEmployee = async (req, res) => {
       receiverWalletAddress: employee.walletAddress,
       status: "Pending",
       receiverName: employee.name,
+      amountInUSD: amountInUSD,
     });
 
     // Send transaction using Tatum
@@ -161,6 +172,15 @@ export const sendBitcoinToAnyone = async (req, res) => {
 
     const decryptedPrivateKey = decrypt(employer.bitcoinWalletprivateKey);
 
+    const rate = await getCryptoPriceInUSD('BTC');
+    if(rate.error){
+      return res.status(500).json({
+        success: false,
+        message: `Error getting exchange rate`,
+      })
+    }
+    const amountInUSD = value.amount * rate;
+
     // Create and save the transaction record
     const transaction = new Transaction({
       transactionId: null,
@@ -169,6 +189,7 @@ export const sendBitcoinToAnyone = async (req, res) => {
       senderWalletAddress: employer.bitcoinWalletAddress,
       receiverWalletAddress: value.receiverWalletAddress,
       status: "Pending",
+      amountInUSD,
     });
 
     // Send transaction using Tatum
@@ -245,7 +266,14 @@ export const handleIncomingBitcoinTransaction = async (req, res, walletType) => 
         message: `Employer not found`,
       });
     }
-
+    const rate = await getCryptoPriceInUSD('BTC');
+    if(rate.error){
+      return res.status(500).json({
+        success: false,
+        message: `Error getting exchange rate`,
+      })
+    }
+    const amountInUSD = amount * rate;
     // Create a new transaction document
       // Check if counterAddress is null and handle it accordingly
   const senderWalletAddress = counterAddress ? counterAddress : "Unknown";
@@ -257,6 +285,7 @@ export const handleIncomingBitcoinTransaction = async (req, res, walletType) => 
       receiverWalletAddress: address,
       receiverName: employer.organizationName, // Optional: Add employer info if needed
       direction: "Incoming",
+      amountInUSD: amountInUSD,
       status: "Success", // Assuming the transaction is successful as it reached this point
     });
 
