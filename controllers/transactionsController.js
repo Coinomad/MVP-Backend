@@ -19,6 +19,7 @@ export const getTransactions = async (req, res) => {
 
     const fetchedTransactions = await employer.populate("transactions");
 
+    console.log("fetchedTransactions", fetchedTransactions);
     res.status(200).json({
       success: true,
       message: "Transaction successful",
@@ -29,11 +30,12 @@ export const getTransactions = async (req, res) => {
         amount: transaction.amount,
         asset: transaction.walletType,
         type: transaction.direction,
-        datetime: transaction.transactionId,
+        datetime: transaction.datetime,
         status: transaction.status,
         timestamp: transaction.datetime,
         receiverName: transaction.receiverName,
         hash: transaction.transactionId,
+        transactionId: transaction._id,
       })),
     });
   } catch (error) {
