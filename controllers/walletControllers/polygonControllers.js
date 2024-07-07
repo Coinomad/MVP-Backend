@@ -71,6 +71,7 @@ export const sendPolygonToEmployee = async (req, res) => {
       status: "Pending",
       receiverName: employee.name,
       amountInUSD: amountInUSD,
+      datetime: new Date().toISOString()
     });
 
     await transaction.save();
@@ -177,6 +178,7 @@ export const sendPolygonToAnyone = async (req, res) => {
       receiverWalletAddress: value.receiverWalletAddress,
       status: "Pending",
       amountInUSD: amountInUSD,
+      datetime: new Date().toISOString()
     });
 
     await transaction.save();
@@ -271,6 +273,7 @@ export const handleIncomingPolygonTransaction = async (req, res) => {
       direction: "Incoming",
       amountInUSD: amountInUSD,
       status: "Success", // Assuming the transaction is successful as it reached this point
+      datetime: new Date().toISOString(),
     });
 
     // Save the transaction to the database

@@ -72,6 +72,7 @@ export const sendBitcoinToEmployee = async (req, res) => {
       status: "Pending",
       receiverName: employee.name,
       amountInUSD: amountInUSD,
+      datetime: new Date().toISOString()
     });
 
     // Send transaction using Tatum
@@ -192,6 +193,7 @@ export const sendBitcoinToAnyone = async (req, res) => {
       receiverWalletAddress: value.receiverWalletAddress,
       status: "Pending",
       amountInUSD,
+      datetime: new Date().toISOString()
     });
 
     // Send transaction using Tatum
@@ -291,6 +293,7 @@ export const handleIncomingBitcoinTransaction = async (req, res, walletType) => 
       direction: "Incoming",
       amountInUSD: amountInUSD,
       status: "Success", // Assuming the transaction is successful as it reached this point
+      datetime: new Date().toISOString(),
     });
 
     // Save the transaction to the database
