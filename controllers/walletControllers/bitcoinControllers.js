@@ -5,6 +5,7 @@ import {
 } from "../../helpers/validation.js";
 import { getCryptoPriceInUSD, getWalletBTCBalance, SendBTC } from "../../helpers/wallets/btcWallet.js";
 import { Employee, Employer, Transaction } from "../../model/userModel.js";
+import { scheduledPaymentQueue } from "../../helpers/queues"
 
 export const sendBitcoinToEmployee = async (req, res) => {
   const employerId = req.user.id;
@@ -38,6 +39,15 @@ export const sendBitcoinToEmployee = async (req, res) => {
         message: `Employee with ID ${value.employeeId} does not belong to this employer`,
       });
     }
+
+    if (value.type === 'scheduled') {
+      await schedulePayment(employerId, value);
+      return res.status(200).json({
+        success: true, 
+        message: `Payment scheduled successfully`,
+      });
+    }
+
     const actualBalance = await getBitcoinActualBalance(
       employer.bitcoinWalletBalance.incoming,
       employer.bitcoinWalletBalance.incomingPending,
@@ -65,6 +75,7 @@ export const sendBitcoinToEmployee = async (req, res) => {
 
     const transaction = new Transaction({
       transactionId: null,
+      type: value.type || 'instant', //Defaults to 'instant'
       amount: value.amount,
       walletType: "BTC",
       senderWalletAddress: employer.bitcoinWalletAddress,
@@ -137,6 +148,40 @@ export const sendBitcoinToEmployee = async (req, res) => {
     });
   }
 };
+
+const schedulePayment = async(employerId, value) => {
+  let cronExpression;
+
+  switch(value.frequency) {
+    case 'daily':
+      cronExpression = '0 0 * * *'; //midnight daily
+      break;
+    case 'weekely':
+      cronExpression = '0 0 * * 0'; // midnight every sunday(new week)
+      break;
+    case 'monthly':
+      cronExpression = '0 0 1 * *'; //every new month
+    default:
+      throw new Error('Invalid frequency')
+  }
+
+  await scheduledPaymentQueue.add({
+    userId: employerId,
+    value,
+  },
+  {
+    repeat: { cron: cronExpression },
+    jobId: `${employerId}-${value.employeeId}-${value.amount}-${value.frequency}`,
+  }
+);
+  console.log(`Scheduled payment for user ${employerId} with frequency ${value.frequency}`);
+};
+
+// export const scheduleBitcoinTranscation = (req, res) => {
+//   const employerId = req.user.id;
+  
+
+// }
 
 export const sendBitcoinToAnyone = async (req, res) => {
   const employerId = req.user.id;

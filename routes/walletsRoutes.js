@@ -5,6 +5,7 @@ import {
   handleIncomingBitcoinTransaction,
   sendBitcoinToAnyone,
   sendBitcoinToEmployee,
+  scheduleBitcoinTranscation
 } from "../controllers/walletControllers/bitcoinControllers.js";
 import {
   handleIncomingPolygonTransaction,
@@ -25,6 +26,12 @@ walletRouter.post(
   authMiddleware,
   sendPolygonToEmployee
 );
+
+// TODO: complete this
+walletRouter.post("/schedule-to-employee", 
+  authMiddleware,
+  scheduleBitcoinTranscation
+)
 
 walletRouter.post(
   "/send-to-anyone/polygon/",

@@ -13,7 +13,6 @@ import { generatePolygonWallet } from "./helpers/wallets/polygonWallet.js";
 import { generateBTCWallet } from "./helpers/wallets/btcWallet.js";
 
 dotenv.config();
-
 const port = process.env.PORT || 3000;
 const app = express();
 // Sanitize user input
