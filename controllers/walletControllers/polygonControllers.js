@@ -11,7 +11,7 @@ import {
 } from "../../helpers/wallets/polygonWallet.js";
 import { Employee, Employer, Transaction } from "../../model/userModel.js";
 
-export const sendPolygonToEmployee = async (req, res) => {
+export const schedulePolygonEmployeeTranscation = async (req, res) => {
   const employerId = req.user.id;
   console.log("coole");
   try {
