@@ -113,6 +113,25 @@ const transactionSchema = new Schema(
       type: Number,
       required: true,
     },
+    type: {
+      type: String,
+      enum: ["instant", "scheduled"],
+      required: true,
+      default: "instant",
+    },
+    frequency: {
+      type: String,
+      enum: ["daily", "weekly", "monthly"],
+      required: function () {
+        return this.type == "scheduled";
+      },
+    },
+    nextPaymentDate: {
+      type: Date,
+      required: function () {
+        return this.type == "scheduled";
+      },
+    },
     senderWalletAddress: {
       type: String,
       required: true,
@@ -157,59 +176,9 @@ const transactionSchema = new Schema(
   }
 );
 
-const scheduleSchema = new Schema(
-  {
-    employer: {
-      type: Schema.Types.ObjectId,
-      ref: "Employer",
-    },
-    frequency: {
-      type: String,
-      enum: ["Daily", "Weekly", "Monthly"],
-      required: true,
-    },
-    time: {
-      type: String,
-      required: true,
-    },
-    day: {
-      type: String,
-      enum: [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
-      ],
-      required: true,
-    },
 
-    status: {
-      type: Boolean,
-      required: true,
-      default: false,
-    },
-
-    amount: {
-      type: Number,
-      default: 0,
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now(),
-    },
-  },
-  {
-    timestamps: {
-      createdAt: "createdAt",
-      updatedAt: "updatedAt",
-    },
-  }
-);
 
 export const Employer = mongoose.model("Employer", employerSchema);
 export const Employee = mongoose.model("Employee", employeeSchema);
 export const Transaction = mongoose.model("Transaction", transactionSchema);
-export const Schedule = mongoose.model("Schedule", scheduleSchema);
+
