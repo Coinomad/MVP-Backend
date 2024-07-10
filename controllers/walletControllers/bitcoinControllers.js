@@ -11,7 +11,7 @@ import {
 } from "../../helpers/wallets/btcWallet.js";
 import { Employee, Employer, Transaction } from "../../model/userModel.js";
 
-export const   scheduleBitcoinEmployeeTranscation = async (req, res) => {
+export const scheduleBitcoinEmployeeTranscation = async (req, res) => {
   const employerId = req.user.id;
 
   try {
@@ -25,7 +25,9 @@ export const   scheduleBitcoinEmployeeTranscation = async (req, res) => {
     }
     const employer = await Employer.findById(employerId).populate("employees");
     if (!employer) {
-      return res.status(404).json({ message: "Employer not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Employer not found" });
     }
 
     const employee = await Employee.findById(value.employeeId);
@@ -330,8 +332,8 @@ export const handleIncomingBitcoinTransaction = async (
 
 export const CheckBTCWalletAdressExists = async (req, res) => {
   try {
-    const  address  = req.params.address;
-    console.log("address",address);
+    const address = req.params.address;
+    console.log("address", address);
     const response = await checkBTCAddressExist(address.toString());
     console.log(response);
 
