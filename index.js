@@ -10,10 +10,9 @@ import walletRouter from "./routes/walletsRoutes.js";
 import employeeRoutes from "./routes/employeeRoutes.js";
 import { createWebhookSubscription } from "./helpers/helpers.js";
 import { generatePolygonWallet } from "./helpers/wallets/polygonWallet.js";
-import { checkBTCAddressExist, generateBTCWallet } from "./helpers/wallets/btcWallet.js";
+import { generateBTCWallet } from "./helpers/wallets/btcWallet.js";
 
 dotenv.config();
-
 const port = process.env.PORT || 3000;
 const app = express();
 // Sanitize user input
@@ -32,14 +31,12 @@ app.get("/", async (req, res) => {
   try {
     const value1 = await generatePolygonWallet();
     const value2 = await generateBTCWallet();
-    const value3= await checkBTCAddressExist("tb1q3eshhdgf5g7ealzj292chtey4x6ygkp2yzyvf2")
     res.status(200).json({
       success: true,
       message: "Wallets generated successfully",
       data: {
         polygonWallet: value1,
         btcWallet: value2,
-        checkBTCAddressExist: value3
       },
     });
   } catch (error) {

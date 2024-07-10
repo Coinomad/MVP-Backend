@@ -66,22 +66,6 @@ export const SendBTC = async (sender, receiver) => {
   }
 };
 
-export const checkBTCAddressExist = async (walletAddress) => {
-  try {
-    const walletResponse = await axios.get(
-      `/v3/bitcoin/address/balance/${walletAddress}`
-    );
-    
-    if (walletResponse.data) {
-      return true;
-    }
-    // return false;
-  } catch (error) {
-    console.log(error);
-    return false;
-  }
-};
-
 export const getDetailsBTCTransaction = async (hash) => {
   try {
     const transactionResponse = await axios.get(

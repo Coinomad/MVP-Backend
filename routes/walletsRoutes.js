@@ -2,21 +2,17 @@ import express from "express";
 
 import { authMiddleware } from "../middleware/ProtectRoutes.js";
 import {
-  CheckBTCWalletAdressExists,
   handleIncomingBitcoinTransaction,
   sendBitcoinToAnyone,
   sendBitcoinToEmployee,
+  scheduleBitcoinTranscation
 } from "../controllers/walletControllers/bitcoinControllers.js";
 import {
-  checkPolygonWalletAdressExists,
   handleIncomingPolygonTransaction,
   sendPolygonToAnyone,
   sendPolygonToEmployee,
 } from "../controllers/walletControllers/polygonControllers.js";
-import {
-  getBalance,
-  getTransactions,
-} from "../controllers/transactionsController.js";
+import { getBalance, getTransactions } from "../controllers/transactionsController.js";
 
 const walletRouter = express.Router();
 
@@ -31,6 +27,12 @@ walletRouter.post(
   sendPolygonToEmployee
 );
 
+// TODO: complete this
+walletRouter.post("/schedule-to-employee", 
+  authMiddleware,
+  scheduleBitcoinTranscation
+)
+
 walletRouter.post(
   "/send-to-anyone/polygon/",
   authMiddleware,
@@ -42,24 +44,12 @@ walletRouter.post(
   sendBitcoinToAnyone
 );
 
-walletRouter.post("/receive/bitcoin", handleIncomingBitcoinTransaction);
+walletRouter.post('/receive/bitcoin', handleIncomingBitcoinTransaction);
 
-walletRouter.post("/receive/polygon", handleIncomingPolygonTransaction);
+walletRouter.post('/receive/polygon', handleIncomingPolygonTransaction);
 
 walletRouter.get("/transactions", authMiddleware, getTransactions);
 
 walletRouter.get("/balance", authMiddleware, getBalance);
-
-walletRouter.get(
-  "/check-wallet/bitcoin/:address/",
-  authMiddleware,
-  CheckBTCWalletAdressExists
-);
-
-walletRouter.get(
-  "/check-wallet/polygon/:address/",
-  authMiddleware,
-  checkPolygonWalletAdressExists
-);
 
 export default walletRouter;

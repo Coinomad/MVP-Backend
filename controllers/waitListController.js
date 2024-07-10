@@ -34,3 +34,27 @@ export const WaitListController = async (req, res) => {
     });
   }
 };
+
+export const getWaitlistUsers = async(req, res) => {
+  try {
+    const users = await WaitListModel.find();
+    const user_count = await WaitListModel.countDocuments();
+    if (!users) {
+      return res.status(404).json({
+        message: "No user in waitlist yet"
+      });
+    } else {
+      return res.status(202).json({
+        success: true,
+        messsage: users,
+        userCount: user_count
+      })
+    }
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false, 
+      message: error.message
+    });
+  }
+};

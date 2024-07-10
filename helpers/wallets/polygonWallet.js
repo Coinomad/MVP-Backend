@@ -29,9 +29,7 @@ export const generatePolygonWallet = async () => {
 
 export const getWalletPolygonBalance = async (address) => {
   try {
-    const walletResponse = await axios.get(
-      `/v3/polygon/account/balance/${address}`
-    );
+    const walletResponse = await axios.get(`/v3/polygon/account/balance/${address}`);
     return walletResponse.data;
   } catch (error) {
     console.log(error);
@@ -41,33 +39,18 @@ export const getWalletPolygonBalance = async (address) => {
   }
 };
 
-export const chekPolygonWalletAdressExists = async (address) => {
-  try {
-    const walletResponse = await axios.get(
-      `/v3/polygon/account/balance/${address}`
-    );
-    if (walletResponse.data) return true;
-    return false;
-  } catch (error) {
-    console.log(error);
-    return false
-  }
-};
-
-export const SendPolygon = async (
-  senderPrivateKey,
-  receiverWalletAddress,
-  amount
-) => {
+export const SendPolygon = async (senderPrivateKey, receiverWalletAddress,amount) => {
   // console.log("senderPrivateKey",senderPrivateKey);
 
   try {
-    const transactionResponse = await axios.post("/v3/polygon/transaction", {
-      currency: "MATIC",
-      to: receiverWalletAddress,
-      amount: amount.toString(),
-      fromPrivateKey: senderPrivateKey,
-    });
+    const transactionResponse = await axios.post("/v3/polygon/transaction",{
+        currency: 'MATIC',
+        to: receiverWalletAddress,
+        amount:amount.toString(),
+        fromPrivateKey: senderPrivateKey,
+       
+      });
+   
 
     return transactionResponse.data;
   } catch (error) {
@@ -79,9 +62,7 @@ export const SendPolygon = async (
 
 export const getDetailsPolygonTransaction = async (hash) => {
   try {
-    const transactionResponse = await axios.get(
-      `/v3/polygon/transaction/${hash}`
-    );
+    const transactionResponse = await axios.get(`/v3/polygon/transaction/${hash}`);
     return transactionResponse.data;
   } catch (error) {
     return {
