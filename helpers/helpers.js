@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 import cryptoJs from "crypto-js";
 import axios from "axios";
+import { scheduledPaymentQueue } from "./queues";
 
 dotenv.config();
 
