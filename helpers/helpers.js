@@ -101,3 +101,33 @@ export const createWebhookSubscription = async (employer) => {
     };
   }
 };
+
+
+
+const schedulePayment = async(employerId, value) => {
+  let cronExpression;
+
+  switch(value.frequency) {
+    case 'daily':
+      cronExpression = '0 0 * * *'; //midnight daily
+      break;
+    case 'weekely':
+      cronExpression = '0 0 * * 0'; // midnight every sunday(new week)
+      break;
+    case 'monthly':
+      cronExpression = '0 0 1 * *'; //every new month
+    default:
+      throw new Error('Invalid frequency')
+  }
+
+  await scheduledPaymentQueue.add({
+    userId: employerId,
+    value,
+  },
+  {
+    repeat: { cron: cronExpression },
+    jobId: `${employerId}-${value.employeeId}-${value.amount}-${value.frequency}`,
+  }
+);
+  console.log(`Scheduled payment for user ${employerId} with frequency ${value.frequency}`);
+};
