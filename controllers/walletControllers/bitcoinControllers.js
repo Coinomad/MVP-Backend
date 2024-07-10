@@ -1,4 +1,4 @@
-import { decrypt, getBitcoinActualBalance } from "../../helpers/helpers.js";
+import { decrypt, getBitcoinActualBalance, schedulePayment } from "../../helpers/helpers.js";
 import {
   sendCoinToAnyOneSchema,
   sendCoinToEmployeeSchema,
