@@ -96,6 +96,8 @@ export const   scheduleBitcoinEmployeeTranscation = async (req, res) => {
       await transaction.save();
       employer.transactions.push(transaction._id);
       await employer.save();
+      employee.transactions.push(transaction._id);
+      await employee.save();
       console.log(response.error);
       return res.status(500).json({
         success: false,
