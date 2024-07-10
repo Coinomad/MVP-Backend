@@ -45,6 +45,11 @@ export const scheduleBitcoinEmployeeTranscation = async (req, res) => {
         message: `Employee with ID ${value.employeeId} does not belong to this employer`,
       });
     }
+
+   
+      await schedulePayment(employerId, value);
+     
+
     const actualBalance = await getBitcoinActualBalance(
       employer.bitcoinWalletBalance.incoming,
       employer.bitcoinWalletBalance.incomingPending,
