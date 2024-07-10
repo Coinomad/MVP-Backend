@@ -5,6 +5,7 @@ import {
 } from "../../helpers/validation.js";
 import { getCryptoPriceInUSD } from "../../helpers/wallets/btcWallet.js";
 import {
+  chekPolygonWalletAdressExists,
   getWalletPolygonBalance,
   SendPolygon,
 } from "../../helpers/wallets/polygonWallet.js";
@@ -71,7 +72,7 @@ export const sendPolygonToEmployee = async (req, res) => {
       status: "Pending",
       receiverName: employee.name,
       amountInUSD: amountInUSD,
-      datetime: new Date().toISOString()
+      datetime: new Date().toISOString(),
     });
 
     await transaction.save();
@@ -87,7 +88,7 @@ export const sendPolygonToEmployee = async (req, res) => {
       transaction.status = "Failed";
       await transaction.save();
       employer.transactions.push(transaction._id);
-      await employer.save();  
+      await employer.save();
       return res.status(500).json({
         success: false,
         message: `Transaction failed`,
@@ -178,7 +179,7 @@ export const sendPolygonToAnyone = async (req, res) => {
       receiverWalletAddress: value.receiverWalletAddress,
       status: "Pending",
       amountInUSD: amountInUSD,
-      datetime: new Date().toISOString()
+      datetime: new Date().toISOString(),
     });
 
     await transaction.save();
@@ -195,7 +196,7 @@ export const sendPolygonToAnyone = async (req, res) => {
       transaction.status = "Failed";
       await transaction.save();
       employer.transactions.push(transaction._id);
-      await employer.save();  
+      await employer.save();
       return res.status(500).json({
         success: false,
         message: "Transaction failed",
@@ -295,5 +296,18 @@ export const handleIncomingPolygonTransaction = async (req, res) => {
       success: true,
       message: "Failed to process webhook",
     });
+  }
+};
+
+export const checkPolygonWalletAdressExists = async (req, res) => {
+  try {
+    const { address } = req.body;
+    const response = await chekPolygonWalletAdressExists(address);
+    return res.status(200).json({ success: true, data: response });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
   }
 };

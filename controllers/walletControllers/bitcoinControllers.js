@@ -3,7 +3,12 @@ import {
   sendCoinToAnyOneSchema,
   sendCoinToEmployeeSchema,
 } from "../../helpers/validation.js";
-import { getCryptoPriceInUSD, getWalletBTCBalance, SendBTC } from "../../helpers/wallets/btcWallet.js";
+import {
+  checkBTCAddressExist,
+  getCryptoPriceInUSD,
+  getWalletBTCBalance,
+  SendBTC,
+} from "../../helpers/wallets/btcWallet.js";
 import { Employee, Employer, Transaction } from "../../model/userModel.js";
 
 export const sendBitcoinToEmployee = async (req, res) => {
@@ -54,12 +59,12 @@ export const sendBitcoinToEmployee = async (req, res) => {
 
     const decryptedPrivateKey = decrypt(employer.bitcoinWalletprivateKey);
 
-    const rate = await getCryptoPriceInUSD('BTC');
-    if(rate.error){
+    const rate = await getCryptoPriceInUSD("BTC");
+    if (rate.error) {
       return res.status(500).json({
         success: false,
         message: `Error getting exchange rate`,
-      })
+      });
     }
     const amountInUSD = value.amount * rate;
 
@@ -72,7 +77,7 @@ export const sendBitcoinToEmployee = async (req, res) => {
       status: "Pending",
       receiverName: employee.name,
       amountInUSD: amountInUSD,
-      datetime: new Date().toISOString()
+      datetime: new Date().toISOString(),
     });
 
     // Send transaction using Tatum
@@ -105,7 +110,7 @@ export const sendBitcoinToEmployee = async (req, res) => {
     const employerbitcoinWalletBalance = await getWalletBTCBalance(
       employer.bitcoinWalletAddress
     );
-    if ( employerbitcoinWalletBalance.error) {
+    if (employerbitcoinWalletBalance.error) {
       return res.status(500).json({
         success: false,
         message: `Error getting bitcoin wallet balance`,
@@ -175,12 +180,12 @@ export const sendBitcoinToAnyone = async (req, res) => {
 
     const decryptedPrivateKey = decrypt(employer.bitcoinWalletprivateKey);
 
-    const rate = await getCryptoPriceInUSD('BTC');
-    if(rate.error){
+    const rate = await getCryptoPriceInUSD("BTC");
+    if (rate.error) {
       return res.status(500).json({
         success: false,
         message: `Error getting exchange rate`,
-      })
+      });
     }
     const amountInUSD = value.amount * rate;
 
@@ -193,7 +198,7 @@ export const sendBitcoinToAnyone = async (req, res) => {
       receiverWalletAddress: value.receiverWalletAddress,
       status: "Pending",
       amountInUSD,
-      datetime: new Date().toISOString()
+      datetime: new Date().toISOString(),
     });
 
     // Send transaction using Tatum
@@ -256,8 +261,11 @@ export const sendBitcoinToAnyone = async (req, res) => {
   }
 };
 
-export const handleIncomingBitcoinTransaction = async (req, res, walletType) => {
-
+export const handleIncomingBitcoinTransaction = async (
+  req,
+  res,
+  walletType
+) => {
   try {
     const { address, amount, blockNumber, counterAddress, txId, chain } =
       req.body;
@@ -272,21 +280,21 @@ export const handleIncomingBitcoinTransaction = async (req, res, walletType) => 
         message: `Employer not found`,
       });
     }
-    const rate = await getCryptoPriceInUSD('BTC');
-    if(rate.error){
+    const rate = await getCryptoPriceInUSD("BTC");
+    if (rate.error) {
       return res.status(500).json({
         success: false,
         message: `Error getting exchange rate`,
-      })
+      });
     }
     const amountInUSD = amount * rate;
     // Create a new transaction document
-      // Check if counterAddress is null and handle it accordingly
-  const senderWalletAddress = counterAddress ? counterAddress : "Unknown";
+    // Check if counterAddress is null and handle it accordingly
+    const senderWalletAddress = counterAddress ? counterAddress : "Unknown";
     const newTransaction = new Transaction({
       transactionId: txId,
       amount: parseFloat(amount),
-      walletType:"BTC", // Dynamic wallet type (BTC or Polygon)
+      walletType: "BTC", // Dynamic wallet type (BTC or Polygon)
       senderWalletAddress,
       receiverWalletAddress: address,
       receiverName: employer.organizationName, // Optional: Add employer info if needed
@@ -315,5 +323,21 @@ export const handleIncomingBitcoinTransaction = async (req, res, walletType) => 
       success: failed,
       message: "Failed to process webhook",
     });
+  }
+};
+
+export const CheckBTCWalletAdressExists = async (req, res) => {
+  try {
+    const  address  = req.params.address;
+    console.log("address",address);
+    const response = await checkBTCAddressExist(address.toString());
+    console.log(response);
+
+    return res.status(200).json({ success: true, data: response });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
   }
 };
