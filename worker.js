@@ -1,7 +1,7 @@
 // const Queue = require('bull');
 
-import { scheduleBitcoinEmployeeTranscation } from "../controllers/walletControllers/bitcoinControllers.js";
-import { scheduledPaymentQueue } from "./queues.js";
+import { scheduleBitcoinEmployeeTranscation } from "./controllers/walletControllers/bitcoinControllers.js";
+import { scheduledPaymentQueue } from "./helpers/queues.js";
 
 
 

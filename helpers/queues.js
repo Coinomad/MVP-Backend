@@ -2,7 +2,7 @@ import Queue from "bull";
 
 const redisConfig = {
     redis: {
-        host: 'redis-stack-server.orb.local',
+        host: '127.0.0.1',
         port: 6379
     }
 } 
