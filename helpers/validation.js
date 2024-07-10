@@ -54,6 +54,7 @@ export const sendCoinToAnyOneSchema = Joi.object().keys({
 
 export const sendCoinToEmployeeSchema = Joi.object().keys({
   amount: Joi.number().required(),
+  frequency: Joi.string().required(),
   employeeId: Joi.string().required(),
 });
 

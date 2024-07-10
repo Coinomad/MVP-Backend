@@ -73,6 +73,9 @@ export const scheduleBitcoinEmployeeTranscation = async (req, res) => {
     const transaction = new Transaction({
       transactionId: null,
       amount: value.amount,
+      type: "scheduled",
+      frequency: value.frequency ,
+      nextPaymentDate: new Date().toISOString(),
       walletType: "BTC",
       senderWalletAddress: employer.bitcoinWalletAddress,
       receiverWalletAddress: employee.walletAddress,
