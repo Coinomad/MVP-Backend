@@ -105,7 +105,7 @@ export const createWebhookSubscription = async (employer) => {
 
 
 
-const schedulePayment = async(employerId, value) => {
+export const schedulePayment = async(employerId, value) => {
   let cronExpression;
 
   switch(value.frequency) {
