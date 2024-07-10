@@ -11,7 +11,7 @@ import {
 } from "../../helpers/wallets/btcWallet.js";
 import { Employee, Employer, Transaction } from "../../model/userModel.js";
 
-export const sendBitcoinToEmployee = async (req, res) => {
+export const   scheduleBitcoinEmployeeTranscation = async (req, res) => {
   const employerId = req.user.id;
 
   try {
