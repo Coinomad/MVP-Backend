@@ -199,6 +199,11 @@ const scheduleSchema = new Schema(
       required: true,
       default: 0,
     },
+    walletType: {
+      type: String,
+      enum: ["BTC", "Polygon"],
+      required: true,
+    },
     createdAt: {
       type: Date,
       required: true,
