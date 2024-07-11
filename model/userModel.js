@@ -62,6 +62,12 @@ const employerSchema = new Schema(
         ref: "Transaction",
       },
     ],
+    scheduleTransaction: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "ScheduledTransaction",
+      },
+    ],
   },
   {
     timestamps: {
@@ -88,6 +94,10 @@ const employeeSchema = new Schema(
         ref: "Transaction",
       },
     ],
+    scheduleTransaction: {
+      type: Schema.Types.ObjectId,
+      ref: "ScheduledTransaction",
+    },
   },
   {
     timestamps: {
@@ -113,25 +123,7 @@ const transactionSchema = new Schema(
       type: Number,
       required: true,
     },
-    type: {
-      type: String,
-      enum: ["instant", "scheduled"],
-      required: true,
-      default: "instant",
-    },
-    frequency: {
-      type: String,
-      enum: ["daily", "weekly", "monthly"],
-      required: function () {
-        return this.type == "scheduled";
-      },
-    },
-    nextPaymentDate: {
-      type: Date,
-      required: function () {
-        return this.type == "scheduled";
-      },
-    },
+
     senderWalletAddress: {
       type: String,
       required: true,
@@ -176,13 +168,55 @@ const transactionSchema = new Schema(
   }
 );
 
+const scheduleSchema = new Schema(
+  {
+    employer: {
+      type: Schema.Types.ObjectId,
+      ref: "Employer",
+    },
+    employee: {
+      type: Schema.Types.ObjectId,
+      ref: "Employee",
+    },
+    frequency: {
+      type: String,
+      enum: ["daily", "weekly", "monthly"],
+      required: true,
+    },
+    nextPaymentDate: {
+      type: Date,
+      required: true,
+    },
 
-
-
-
-
+    status: {
+      type: String,
+      enum: ["Scheduled", "Paid"],
+      required: true,
+      default: "Scheduled",
+    },
+    amount: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    createdAt: {
+      type: Date,
+      required: true,
+      default: Date.now(),
+    },
+  },
+  {
+    timestamps: {
+      createdAt: "createdAt",
+      updatedAt: "updatedAt",
+    },
+  }
+);
 
 export const Employer = mongoose.model("Employer", employerSchema);
 export const Employee = mongoose.model("Employee", employeeSchema);
 export const Transaction = mongoose.model("Transaction", transactionSchema);
-
+export const ScheduledTransaction = mongoose.model(
+  "ScheduledTransaction",
+  scheduleSchema
+);

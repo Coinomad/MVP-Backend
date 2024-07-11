@@ -13,11 +13,16 @@ import {
   getWalletBTCBalance,
   SendBTC,
 } from "../../helpers/wallets/btcWallet.js";
-import { Employee, Employer, Transaction } from "../../model/userModel.js";
+import {
+  Employee,
+  Employer,
+  ScheduledTransaction,
+  Transaction,
+} from "../../model/userModel.js";
 
 export const scheduleBitcoinEmployeeTranscation = async (req, res) => {
   const employerId = req.user.id;
-  const asset="bitcoin"
+  const asset = "bitcoin";
   try {
     const { value, error } = sendCoinToEmployeeSchema.validate(req.body);
     if (error) {
@@ -50,7 +55,31 @@ export const scheduleBitcoinEmployeeTranscation = async (req, res) => {
       });
     }
 
-    await schedulePayment(employer, employee, value, asset);
+    const scheduledTransaction = ScheduledTransaction({
+      employer: employer._id,
+      employee: employee._id,
+      frequency: value.frequency,
+      nextPaymentDate: value.nextPaymentDate,
+      amount: value.amount,
+    });
+    await scheduledTransaction.save();
+
+    employer.scheduleTransaction.push(scheduledTransaction._id);
+    await employer.save();
+    employee.scheduleTransaction = scheduledTransaction._id;
+    await employee.save();
+
+    await schedulePayment(
+      employer._id,
+      employee._id,
+      value,
+      asset,
+      scheduledTransaction._id
+    );
+    return res.status(200).json({
+      success: true,
+      message: `Payment scheduled successfully`,
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({
@@ -61,8 +90,14 @@ export const scheduleBitcoinEmployeeTranscation = async (req, res) => {
 };
 
 export const sendBitcoinToEmployee = async (req, res) => {
-  const { employee, employer, value } = req;
+  const { employerId, employeeId, asset, scheduledTransactionId, value } = req;
   try {
+    const employee = await Employee.findById(employeeId);
+    const employer = await Employer.findById(employerId);
+    const scheduledTransaction = await ScheduledTransaction.findById(
+      scheduledTransactionId
+    );
+
     const actualBalance = await getBitcoinActualBalance(
       employer.bitcoinWalletBalance.incoming,
       employer.bitcoinWalletBalance.incomingPending,

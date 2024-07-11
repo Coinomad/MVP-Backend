@@ -21,10 +21,11 @@ import {
 const walletRouter = express.Router();
 
 walletRouter.post(
-  "/send-to-employee/bitcoin/",
+  "/schedule-transaction/bitcoin/",
   authMiddleware,
   scheduleBitcoinEmployeeTranscation
 );
+
 walletRouter.post(
   "/send-to-employee/polygon/",
   authMiddleware,
