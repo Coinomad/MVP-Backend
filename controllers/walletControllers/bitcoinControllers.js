@@ -187,7 +187,7 @@ export const sendBitcoinToEmployee = async (req, res) => {
     await employee.save();
 
     // Update scheduled transaction
-    scheduledTransaction.status = "Paid";
+ 
     await scheduledTransaction.save();
     res.status(200).json({
       success: true,
