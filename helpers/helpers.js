@@ -56,7 +56,9 @@ export const getBitcoinActualBalance = async (
   outgoing_Pending
 ) => {
   const actualBalance =
-    (Number(incoming) + Number(incoming_Pending)) - (Number(outgoing) + Number(outgoing_Pending));
+    Number(incoming) +
+    Number(incoming_Pending) -
+    (Number(outgoing) + Number(outgoing_Pending));
   return actualBalance;
 };
 
@@ -103,32 +105,34 @@ export const createWebhookSubscription = async (employer) => {
   }
 };
 
-
-
-export const schedulePayment = async(employerId, value) => {
+export const schedulePayment = async (employee, employer, value) => {
   let cronExpression;
 
-  switch(value.frequency) {
-    case 'daily':
-      cronExpression = '0 0 * * *'; //midnight daily
+  switch (value.frequency) {
+    case "daily":
+      cronExpression = "0 0 * * *"; //midnight daily
       break;
-    case 'weekely':
-      cronExpression = '0 0 * * 0'; // midnight every sunday(new week)
+    case "weekely":
+      cronExpression = "0 0 * * 0"; // midnight every sunday(new week)
       break;
-    case 'monthly':
-      cronExpression = '0 0 1 * *'; //every new month
+    case "monthly":
+      cronExpression = "0 0 1 * *"; //every new month
     default:
-      throw new Error('Invalid frequency')
+      throw new Error("Invalid frequency");
   }
 
-  await scheduledPaymentQueue.add({
-    userId: employerId,
-    value,
-  },
-  {
-    repeat: { cron: cronExpression },
-    jobId: `${employerId}-${value.employeeId}-${value.amount}-${value.frequency}`,
-  }
-);
-  console.log(`Scheduled payment for user ${employerId} with frequency ${value.frequency}`);
+  await scheduledPaymentQueue.add(
+    {
+      employee: employee,
+      employer: employer,
+      value,
+    },
+    {
+      repeat: { cron: cronExpression },
+      jobId: `${employer._id}-${employee._id}-${value.amount}-${value.frequency}`,
+    }
+  );
+  console.log(
+    `Scheduled payment for user ${employer._id} with frequency ${value.frequency}`
+  );
 };

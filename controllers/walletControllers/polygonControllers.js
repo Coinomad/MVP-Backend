@@ -14,6 +14,7 @@ import { Employee, Employer, Transaction } from "../../model/userModel.js";
 export const schedulePolygonEmployeeTranscation = async (req, res) => {
   const employerId = req.user.id;
   console.log("coole");
+  const asset="bitcoin"
   try {
     const { value, error } = sendCoinToEmployeeSchema.validate(req.body);
     if (error) {

@@ -1,4 +1,8 @@
-import { decrypt, getBitcoinActualBalance, schedulePayment } from "../../helpers/helpers.js";
+import {
+  decrypt,
+  getBitcoinActualBalance,
+  schedulePayment,
+} from "../../helpers/helpers.js";
 import {
   sendCoinToAnyOneSchema,
   sendCoinToEmployeeSchema,
@@ -13,7 +17,7 @@ import { Employee, Employer, Transaction } from "../../model/userModel.js";
 
 export const scheduleBitcoinEmployeeTranscation = async (req, res) => {
   const employerId = req.user.id;
-
+  const asset="bitcoin"
   try {
     const { value, error } = sendCoinToEmployeeSchema.validate(req.body);
     if (error) {
@@ -46,10 +50,19 @@ export const scheduleBitcoinEmployeeTranscation = async (req, res) => {
       });
     }
 
-   
-      await schedulePayment(employerId, value);
-     
+    await schedulePayment(employer, employee, value, asset);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: `Error scheduling Employee`,
+    });
+  }
+};
 
+export const sendBitcoinToEmployee = async (req, res) => {
+  const { employee, employer, value } = req;
+  try {
     const actualBalance = await getBitcoinActualBalance(
       employer.bitcoinWalletBalance.incoming,
       employer.bitcoinWalletBalance.incomingPending,
@@ -79,7 +92,7 @@ export const scheduleBitcoinEmployeeTranscation = async (req, res) => {
       transactionId: null,
       amount: value.amount,
       type: "scheduled",
-      frequency: value.frequency ,
+      frequency: value.frequency,
       nextPaymentDate: new Date().toISOString(),
       walletType: "BTC",
       senderWalletAddress: employer.bitcoinWalletAddress,
@@ -145,9 +158,8 @@ export const scheduleBitcoinEmployeeTranscation = async (req, res) => {
         transaction,
       },
     });
-  } catch (error) {
+  } catch (e) {
     console.log(error);
-
     res.status(500).json({
       success: false,
       message: `Error sending bitcoin to employee`,

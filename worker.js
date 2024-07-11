@@ -1,17 +1,17 @@
 // const Queue = require('bull');
 
-import { scheduleBitcoinEmployeeTranscation } from "./controllers/walletControllers/bitcoinControllers.js";
+import { sendBitcoinToEmployee } from "./controllers/walletControllers/bitcoinControllers.js";
+import { sendPolygonToEmployee } from "./controllers/walletControllers/polygonControllers.js";
 import { scheduledPaymentQueue } from "./helpers/queues.js";
-
-
 
 // Function to process a scheduled payment
 async function processScheduledPayment(job) {
-  const { userId, value } = job.data;
+  const { employer, employee, value, asset } = job.data;
   // Simulate request and response objects
   const req = {
-    user: { id: userId },
-    body: value,
+    employer: employer,
+    employee: employee,
+    value: value,
   };
   const res = {
     status: (statusCode) => ({
@@ -20,10 +20,14 @@ async function processScheduledPayment(job) {
   };
 
   // Call the sendBitcoinToEmployee function
-  await scheduleBitcoinEmployeeTranscation(req, res);
+  if (asset === "bitcoin") {
+    await sendBitcoinToEmployee(req, res);
+  } else {
+    await sendPolygonToEmployee(req, res);
+  }
 }
 
 // Add the processor to the queue
 scheduledPaymentQueue.process(processScheduledPayment);
 
-console.log('Worker is running and waiting for jobs...');
+console.log("Worker is running and waiting for jobs...");
