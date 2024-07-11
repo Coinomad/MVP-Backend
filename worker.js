@@ -6,13 +6,10 @@ import { scheduledPaymentQueue } from "./helpers/queues.js";
 
 // Function to process a scheduled payment
 async function processScheduledPayment(job) {
-  const { employer, employee, value, asset } = job.data;
+  const { employerId, employeeId, asset, scheduledTransactionId, value } =
+    job.data;
   // Simulate request and response objects
-  const req = {
-    employer: employer,
-    employee: employee,
-    value: value,
-  };
+  const req = { employerId, employeeId, asset, scheduledTransactionId, value };
   const res = {
     status: (statusCode) => ({
       json: (data) => console.log(`Response: ${JSON.stringify(data)}`),
