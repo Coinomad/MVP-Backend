@@ -131,6 +131,18 @@ export const schedulePolygonEmployeeTranscation = async (req, res) => {
   }
 };
 
+export const sendPolygonToEmployee = async (req, res) => {
+  // try {
+  //   const { address, amount } = req.body;
+  //   const response = await SendPolygon(address, amount);
+  //   return res.status(200).json({ success: true, data: response });
+  // } catch (error) {
+  //   console.error(error);
+  //   return res
+  //     .status(500)
+  //     .json({ success: false, message: "Internal server error" });
+  // }
+}
 export const sendPolygonToAnyone = async (req, res) => {
   const employerId = req.user.id;
 

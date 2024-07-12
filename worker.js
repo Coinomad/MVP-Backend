@@ -24,7 +24,9 @@ async function processScheduledPayment(job) {
   }
 }
 
+
 // Add the processor to the queue
 scheduledPaymentQueue.process(processScheduledPayment);
+
 
 console.log("Worker is running and waiting for jobs...");

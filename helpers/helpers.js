@@ -105,7 +105,13 @@ export const createWebhookSubscription = async (employer) => {
   }
 };
 
-export const schedulePayment = async (employerId, employeeId, value, asset, scheduledTransactionId) => {
+export const schedulePayment = async (
+  employerId,
+  employeeId,
+  value,
+  asset,
+  scheduledTransactionId
+) => {
   // employer._id, employee._id, value, asset,scheduledTransaction._id
   let cronExpression;
 
@@ -132,7 +138,7 @@ export const schedulePayment = async (employerId, employeeId, value, asset, sche
     },
     {
       repeat: { cron: cronExpression },
-      jobId: `${ employerId}-${employeeId}-${value.amount}-${value.frequency}`,
+      jobId: `${employerId}-${employeeId}-${value.amount}-${value.frequency}`,
     }
   );
   console.log(

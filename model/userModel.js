@@ -183,16 +183,9 @@ const scheduleSchema = new Schema(
       enum: ["daily", "weekly", "monthly"],
       required: true,
     },
-    nextPaymentDate: {
+    scheduledDate: {
       type: Date,
       required: true,
-    },
-
-    status: {
-      type: String,
-      enum: ["Scheduled", "Paid"],
-      required: true,
-      default: "Scheduled",
     },
     amount: {
       type: Number,

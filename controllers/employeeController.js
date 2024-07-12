@@ -1,4 +1,3 @@
-
 import { employeeSchema, employeeUpdateSchema } from "../helpers/validation.js";
 import {
   Employee,
@@ -87,22 +86,22 @@ export const getEmployees = async (req, res) => {
     // Find employees under the employer
     const employees = await Employee.find({ employer: employer._id })
       .populate("employer")
-      .populate("transactions");
+      .populate("transactions")
+      .populate("scheduleTransaction");
 
     // Return success response
     return res.status(200).json({
       success: true,
       message: "Employees found successfully",
-      data: [
-        ...employees.map((employee, index) => ({
-          firstName: employee.firstName,
-          lastName: employee.lastName,
-          email: employee.email,
-          asset: employee.asset,
-          walletAddress: employee.walletAddress,
-          employeeId: employee._id,
-        })),
-      ],
+      data: employees.map((employee) => ({
+        firstName: employee.firstName,
+        lastName: employee.lastName,
+        email: employee.email,
+        asset: employee.asset,
+        walletAddress: employee.walletAddress,
+        employeeId: employee._id,
+        scheduleTransaction: employee.scheduleTransaction,
+      })),
     });
   } catch (err) {
     console.error("Login error", err);
@@ -114,7 +113,7 @@ export const getEmployees = async (req, res) => {
 };
 
 export const updateEmployeeData = async (req, res) => {
-  const {employeeId} = req.params;
+  const { employeeId } = req.params;
   const employerId = req.user.id;
   try {
     const { value, error } = employeeUpdateSchema.validate(req.body);
@@ -172,7 +171,6 @@ export const deleteEmployee = async (req, res) => {
   const { employeeId } = req.params;
   const employerId = req.user.id;
   try {
-    
     // Find the Employer by email
     const employer = await Employer.findById(employerId);
     if (!employer) {
@@ -195,7 +193,7 @@ export const deleteEmployee = async (req, res) => {
     }
 
     // Delete the employee
-     await Employee.findByIdAndDelete(employeeId);
+    await Employee.findByIdAndDelete(employeeId);
 
     return res.status(200).json({
       success: true,

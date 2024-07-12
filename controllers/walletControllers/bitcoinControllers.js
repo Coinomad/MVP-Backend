@@ -59,7 +59,7 @@ export const scheduleBitcoinEmployeeTranscation = async (req, res) => {
       employer: employer._id,
       employee: employee._id,
       frequency: value.frequency,
-      nextPaymentDate: value.nextPaymentDate,
+      scheduledDate: value.scheduledDate,
       amount: value.amount,
       walletType: "BTC",
     });
@@ -186,9 +186,7 @@ export const sendBitcoinToEmployee = async (req, res) => {
     employee.transactions.push(transaction._id);
     await employee.save();
 
-    // Update scheduled transaction
- 
-    await scheduledTransaction.save();
+
     res.status(200).json({
       success: true,
       message: "Transaction successful",

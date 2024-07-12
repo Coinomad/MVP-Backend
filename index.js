@@ -11,6 +11,7 @@ import employeeRoutes from "./routes/employeeRoutes.js";
 import { createWebhookSubscription } from "./helpers/helpers.js";
 import { generatePolygonWallet } from "./helpers/wallets/polygonWallet.js";
 import { checkBTCAddressExist, generateBTCWallet } from "./helpers/wallets/btcWallet.js";
+import  bullBoardRouter from "./helpers/bullBoard.js";
 
 dotenv.config();
 
@@ -51,6 +52,8 @@ app.get("/", async (req, res) => {
   }
 });
 
+// app.use('/admin/queues', bullBoardRouter);
+
 // /v1/api/employeeauth
 app.use("/v1/api/employee", employeeRoutes);
 
@@ -65,6 +68,9 @@ app.use("/v1/api/wallet", walletRouter);
 
 // for notfound 404
 app.use(notFoundMiddleware);
+
+// Start the worker
+import './worker.js';
 
 app.listen(port, () => {
   createWebhookSubscription();
