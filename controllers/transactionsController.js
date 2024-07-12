@@ -19,7 +19,7 @@ export const getTransactions = async (req, res) => {
 
     const fetchedTransactions = await employer.populate("transactions");
 
-    console.log("fetchedTransactions", fetchedTransactions);
+    // console.log("fetchedTransactions", fetchedTransactions);
     res.status(200).json({
       success: true,
       message: "Transaction successful",
