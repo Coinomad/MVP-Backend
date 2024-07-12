@@ -88,7 +88,7 @@ export const getEmployees = async (req, res) => {
     const employees = await Employee.find({ employer: employer._id })
       .populate("employer")
       .populate("transactions")
-      .populate("scheduleTransaction");
+      // .populate("scheduleTransaction");
 
     // Return success response
     return res.status(200).json({
