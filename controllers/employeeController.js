@@ -87,22 +87,22 @@ export const getEmployees = async (req, res) => {
     // Find employees under the employer
     const employees = await Employee.find({ employer: employer._id })
       .populate("employer")
-      .populate("transactions");
+      .populate("transactions")
+      .populate("scheduleTransaction");
 
     // Return success response
     return res.status(200).json({
       success: true,
       message: "Employees found successfully",
-      data: [
-        ...employees.map((employee, index) => ({
-          firstName: employee.firstName,
-          lastName: employee.lastName,
-          email: employee.email,
-          asset: employee.asset,
-          walletAddress: employee.walletAddress,
-          employeeId: employee._id,
-        })),
-      ],
+      data: employees.map((employee) => ({
+        firstName: employee.firstName,
+        lastName: employee.lastName,
+        email: employee.email,
+        asset: employee.asset,
+        walletAddress: employee.walletAddress,
+        employeeId: employee._id,
+        scheduleTransaction: employee.scheduleTransaction,
+      }))
     });
   } catch (err) {
     console.error("Login error", err);
