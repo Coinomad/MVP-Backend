@@ -1,9 +1,13 @@
-import { BullAdapter, setQueues, router } from 'bull-board';
-import { paymentQueue } from './queue.js';
+import {   createBullBoard } from 'bull-board';
+import {BullAdapter} from 'bull-board/bullAdapter.js'
+import { scheduledPaymentQueue } from './queues.js';
+
 
 // Set up the queues to be monitored
-setQueues([
-  new BullAdapter(paymentQueue),
+
+
+const { router, setQueues, replaceQueues } = createBullBoard([
+  new BullAdapter(scheduledPaymentQueue),
 ]);
 
 export default router;

@@ -74,7 +74,7 @@ export const scheduleBitcoinEmployeeTranscation = async (req, res) => {
       employer._id,
       employee._id,
       value,
-      asset,
+      asset,                          
       scheduledTransaction._id
     );
     return res.status(200).json({

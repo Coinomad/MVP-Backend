@@ -1,0 +1,12 @@
+for daily
+ -time
+ FE-dropdown to pick time
+
+
+weekly
+    -time
+    -days of the week (Sun-Sat)
+
+
+Monthly
+    -day and time
