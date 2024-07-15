@@ -27,6 +27,12 @@ walletRouter.post(
 );
 
 walletRouter.post(
+  "/schedule-transaction/polygon/",
+  authMiddleware,
+  schedulePolygonEmployeeTranscation
+);
+
+walletRouter.post(
   "/send-to-employee/polygon/",
   authMiddleware,
   schedulePolygonEmployeeTranscation
