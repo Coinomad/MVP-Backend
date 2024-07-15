@@ -39,6 +39,9 @@ export const scheduleBitcoinEmployeeTranscation = async (req, res) => {
         .json({ success: false, message: "Employer not found" });
     }
 
+    
+    
+    
     const employee = await Employee.findById(value.employeeId);
     if (!employee) {
       return res.status(400).json({
@@ -46,6 +49,14 @@ export const scheduleBitcoinEmployeeTranscation = async (req, res) => {
         message: `Employee with ID ${value.employeeId} not found`,
       });
     }
+    
+    if (employee.scheduleTransaction) {
+      return res.status(400).json({
+        success: false,
+        message: `Employee Salary Already scheduled`,
+      });
+    }
+
 
     // Ensure the employee belongs to the employer
     if (!employer.employees.some((emp) => emp.equals(employee._id))) {

@@ -9,7 +9,12 @@ import {
   getWalletPolygonBalance,
   SendPolygon,
 } from "../../helpers/wallets/polygonWallet.js";
-import { Employee, Employer, ScheduledTransaction, Transaction } from "../../model/userModel.js";
+import {
+  Employee,
+  Employer,
+  ScheduledTransaction,
+  Transaction,
+} from "../../model/userModel.js";
 
 export const schedulePolygonEmployeeTranscation = async (req, res) => {
   const employerId = req.user.id;
@@ -40,6 +45,15 @@ export const schedulePolygonEmployeeTranscation = async (req, res) => {
       });
     }
 
+    if (employee.scheduleTransaction) {
+      return res.status(400).json({
+        success: false,
+        message: `Employee Salary Already scheduled`,
+      });
+    }
+
+
+    
     if (!employer.employees.some((emp) => emp.equals(employee._id))) {
       return res.status(400).json({
         success: false,
