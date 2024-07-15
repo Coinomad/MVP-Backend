@@ -110,22 +110,52 @@ export const schedulePayment = async (
   employeeId,
   value,
   asset,
-  scheduledTransactionId
+  hour = 0,
+  minute = 0,
+  day = 0, // default to Sunday if not provided
+  date = 1 // default to the 1st of the month if not provided
 ) => {
   // employer._id, employee._id, value, asset,scheduledTransaction._id
   let cronExpression;
+  console.log("erroror", value.frequency);
 
+  const now = new Date();
+  const scheduledTimeToday = new Date(now);
+  // console.log("timesdss", now, scheduledTimeToday);
+  scheduledTimeToday.setHours(hour);
+  scheduledTimeToday.setMinutes(minute);
+  scheduledTimeToday.setSeconds(0);
+  console.log("timesdss", now, scheduledTimeToday);
   switch (value.frequency) {
     case "daily":
-      cronExpression = "0 0 * * *"; //midnight daily
+      cronExpression = `0 ${minute} ${hour} * * *`; //midnight daily
       break;
-    case "weekely":
-      cronExpression = "0 0 * * 0"; // midnight every sunday(new week)
+    case "weekly":
+      cronExpression = `0 ${minute} ${hour} * * ${day}`; // midnight every sunday(new week)
       break;
     case "monthly":
-      cronExpression = "0 0 1 * *"; //every new month
+      cronExpression = `0 ${minute} ${hour} ${date} * *`; //every new month
     default:
       throw new Error("Invalid frequency");
+  }
+  console.log("cronExpression", cronExpression);
+
+  if (now < scheduledTimeToday) {
+    console.log("timesdss", now, scheduledTimeToday);
+    // Schedule a job for today at the specified time
+    await scheduledPaymentQueue.add(
+      {
+        employerId,
+        employeeId,
+        asset,
+        value,
+      },
+      {
+        delay: scheduledTimeToday.getTime() - now.getTime(),
+        jobId: `${employerId}-${employeeId}-${value.amount}-initial-${value.frequency}`,
+      }
+    );
+    console.log(`Scheduled initial payment for today at ${scheduledTimeToday}`);
   }
 
   await scheduledPaymentQueue.add(
@@ -133,7 +163,6 @@ export const schedulePayment = async (
       employerId,
       employeeId,
       asset,
-      scheduledTransactionId,
       value,
     },
     {
