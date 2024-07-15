@@ -54,12 +54,25 @@ export const scheduleBitcoinEmployeeTranscation = async (req, res) => {
         message: `Employee with ID ${value.employeeId} does not belong to this employer`,
       });
     }
+    const actualBalance = await getBitcoinActualBalance(
+      employer.bitcoinWalletBalance.incoming,
+      employer.bitcoinWalletBalance.incomingPending,
+      employer.bitcoinWalletBalance.outgoing,
+      employer.bitcoinWalletBalance.outgoingPending
+    );
+
+    if (actualBalance < value.amount) {
+      return res.status(400).json({
+        success: false,
+        message: `Insufficient balance to send ${value.amount} bitcoin`,
+      });
+    }
 
     const scheduledTransaction = ScheduledTransaction({
       employer: employer._id,
       employee: employee._id,
       frequency: value.frequency,
-      scheduledDate: value.scheduledDate,
+      scheduledDate: value.hour,
       amount: value.amount,
       walletType: "BTC",
     });
@@ -69,13 +82,16 @@ export const scheduleBitcoinEmployeeTranscation = async (req, res) => {
     await employer.save();
     employee.scheduleTransaction = scheduledTransaction._id;
     await employee.save();
-
+    const { hour, minute, day, date } = value;
     await schedulePayment(
       employer._id,
       employee._id,
       value,
-      asset,                          
-      scheduledTransaction._id
+      asset,
+      hour,
+      minute,
+      day,
+      date,
     );
     return res.status(200).json({
       success: true,
@@ -95,23 +111,9 @@ export const sendBitcoinToEmployee = async (req, res) => {
   try {
     const employee = await Employee.findById(employeeId);
     const employer = await Employer.findById(employerId);
-    const scheduledTransaction = await ScheduledTransaction.findById(
-      scheduledTransactionId
-    );
-
-    const actualBalance = await getBitcoinActualBalance(
-      employer.bitcoinWalletBalance.incoming,
-      employer.bitcoinWalletBalance.incomingPending,
-      employer.bitcoinWalletBalance.outgoing,
-      employer.bitcoinWalletBalance.outgoingPending
-    );
-
-    if (actualBalance < value.amount) {
-      return res.status(400).json({
-        success: false,
-        message: `Insufficient balance to send ${value.amount} bitcoin`,
-      });
-    }
+    // const scheduledTransaction = await ScheduledTransaction.findById(
+    //   scheduledTransactionId
+    // );
 
     const decryptedPrivateKey = decrypt(employer.bitcoinWalletprivateKey);
 
@@ -186,7 +188,6 @@ export const sendBitcoinToEmployee = async (req, res) => {
     employee.transactions.push(transaction._id);
     await employee.save();
 
-
     res.status(200).json({
       success: true,
       message: "Transaction successful",
@@ -196,7 +197,6 @@ export const sendBitcoinToEmployee = async (req, res) => {
       },
     });
   } catch (e) {
-    console.log(error);
     res.status(500).json({
       success: false,
       message: `Error sending bitcoin to employee`,
