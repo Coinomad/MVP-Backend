@@ -174,6 +174,10 @@ export const sendBitcoinToEmployee = async (req, res) => {
       return res.status(500).json({
         success: false,
         message: `Transaction failed`,
+        data: {
+          transactionId: transaction.transactionId,
+          transaction,
+        },
       });
     }
 
@@ -293,6 +297,10 @@ export const sendBitcoinToAnyone = async (req, res) => {
       return res.status(500).json({
         success: false,
         message: `Transaction Failed`,
+        data: {
+          transactionId: transaction.transactionId,
+          transaction,
+        },
       });
     }
 

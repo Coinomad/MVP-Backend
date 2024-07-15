@@ -150,6 +150,10 @@ export const sendPolygonToEmployee = async (req, res) => {
       return res.status(500).json({
         success: false,
         message: `Transaction failed`,
+        data: {
+          transactionId: transaction.transactionId,
+          transaction,
+        },
       });
     }
 
@@ -257,7 +261,10 @@ export const sendPolygonToAnyone = async (req, res) => {
       return res.status(500).json({
         success: false,
         message: "Transaction failed",
-        error: "Insufficient balance",
+        data: {
+          transactionId: transaction.transactionId,
+          transaction,
+        },
       });
     }
 
