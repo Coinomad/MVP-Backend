@@ -15,18 +15,22 @@ async function processScheduledPayment(job) {
       json: (data) => console.log(`Response: ${JSON.stringify(data)}`),
     }),
   };
-
-  // Call the sendBitcoinToEmployee function
-  if (asset === "bitcoin") {
-    await sendBitcoinToEmployee(req, res);
-  } else {
-    await sendPolygonToEmployee(req, res);
+  try {
+    // Call the sendBitcoinToEmployee function
+    if (asset === "bitcoin") {
+      await sendBitcoinToEmployee(req, res);
+    } else if (asset === "polygon") {
+      await sendPolygonToEmployee(req, res);
+    } else {
+      throw new Error("Unsupported asset");
+    }
+  } catch (error) {
+    console.error(`Failed to process payment: ${error.message}`);
+    throw error;
   }
 }
 
-
 // Add the processor to the queue
 scheduledPaymentQueue.process(processScheduledPayment);
-
 
 console.log("Worker is running and waiting for jobs...");
