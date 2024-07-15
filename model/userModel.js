@@ -62,6 +62,12 @@ const employerSchema = new Schema(
         ref: "Transaction",
       },
     ],
+    scheduleTransaction: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "ScheduledTransaction",
+      },
+    ],
   },
   {
     timestamps: {
@@ -88,6 +94,10 @@ const employeeSchema = new Schema(
         ref: "Transaction",
       },
     ],
+    scheduleTransaction: {
+      type: Schema.Types.ObjectId,
+      ref: "ScheduledTransaction",
+    },
   },
   {
     timestamps: {
@@ -113,6 +123,7 @@ const transactionSchema = new Schema(
       type: Number,
       required: true,
     },
+
     senderWalletAddress: {
       type: String,
       required: true,
@@ -163,41 +174,32 @@ const scheduleSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Employer",
     },
+    employee: {
+      type: Schema.Types.ObjectId,
+      ref: "Employee",
+    },
     frequency: {
       type: String,
-      enum: ["Daily", "Weekly", "Monthly"],
+      enum: ["daily", "weekly", "monthly"],
       required: true,
     },
-    time: {
-      type: String,
+    scheduledDate: {
+      type: Date,
       required: true,
     },
-    day: {
-      type: String,
-      enum: [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
-      ],
-      required: true,
-    },
-
-    status: {
-      type: Boolean,
-      required: true,
-      default: false,
-    },
-
     amount: {
       type: Number,
+      required: true,
       default: 0,
+    },
+    walletType: {
+      type: String,
+      enum: ["BTC", "Polygon"],
+      required: true,
     },
     createdAt: {
       type: Date,
+      required: true,
       default: Date.now(),
     },
   },
@@ -212,4 +214,7 @@ const scheduleSchema = new Schema(
 export const Employer = mongoose.model("Employer", employerSchema);
 export const Employee = mongoose.model("Employee", employeeSchema);
 export const Transaction = mongoose.model("Transaction", transactionSchema);
-export const Schedule = mongoose.model("Schedule", scheduleSchema);
+export const ScheduledTransaction = mongoose.model(
+  "ScheduledTransaction",
+  scheduleSchema
+);

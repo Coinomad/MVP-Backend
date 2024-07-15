@@ -54,13 +54,17 @@ export const sendCoinToAnyOneSchema = Joi.object().keys({
 
 export const sendCoinToEmployeeSchema = Joi.object().keys({
   amount: Joi.number().required(),
+  frequency: Joi.string().required(),
   employeeId: Joi.string().required(),
+  hour: Joi.number(),
+  minute: Joi.number(),
+  day: Joi.number(), //starting from sunday with 0
+  date: Joi.number(), //
 });
 
 export const resendTokenSchema = Joi.object().keys({
   email: Joi.string().required().email({ minDomainSegments: 2 }),
 });
-
 
 export const userSchemaLogin = Joi.object().keys({
   email: Joi.string().required().email({ minDomainSegments: 2 }),

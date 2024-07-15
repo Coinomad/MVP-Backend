@@ -1,4 +1,8 @@
-import { decrypt, getBitcoinActualBalance } from "../../helpers/helpers.js";
+import {
+  decrypt,
+  getBitcoinActualBalance,
+  schedulePayment,
+} from "../../helpers/helpers.js";
 import {
   sendCoinToAnyOneSchema,
   sendCoinToEmployeeSchema,
@@ -9,11 +13,16 @@ import {
   getWalletBTCBalance,
   SendBTC,
 } from "../../helpers/wallets/btcWallet.js";
-import { Employee, Employer, Transaction } from "../../model/userModel.js";
+import {
+  Employee,
+  Employer,
+  ScheduledTransaction,
+  Transaction,
+} from "../../model/userModel.js";
 
-export const sendBitcoinToEmployee = async (req, res) => {
+export const scheduleBitcoinEmployeeTranscation = async (req, res) => {
   const employerId = req.user.id;
-
+  const asset = "bitcoin";
   try {
     const { value, error } = sendCoinToEmployeeSchema.validate(req.body);
     if (error) {
@@ -25,7 +34,9 @@ export const sendBitcoinToEmployee = async (req, res) => {
     }
     const employer = await Employer.findById(employerId).populate("employees");
     if (!employer) {
-      return res.status(404).json({ message: "Employer not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Employer not found" });
     }
 
     const employee = await Employee.findById(value.employeeId);
@@ -57,6 +68,53 @@ export const sendBitcoinToEmployee = async (req, res) => {
       });
     }
 
+    const scheduledTransaction = ScheduledTransaction({
+      employer: employer._id,
+      employee: employee._id,
+      frequency: value.frequency,
+      scheduledDate: value.hour,
+      amount: value.amount,
+      walletType: "BTC",
+    });
+    await scheduledTransaction.save();
+
+    employer.scheduleTransaction.push(scheduledTransaction._id);
+    await employer.save();
+    employee.scheduleTransaction = scheduledTransaction._id;
+    await employee.save();
+    const { hour, minute, day, date } = value;
+    await schedulePayment(
+      employer._id,
+      employee._id,
+      value,
+      asset,
+      hour,
+      minute,
+      day,
+      date,
+    );
+    return res.status(200).json({
+      success: true,
+      message: `Payment scheduled successfully`,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: `Error scheduling Employee`,
+    });
+  }
+};
+
+export const sendBitcoinToEmployee = async (req, res) => {
+  const { employerId, employeeId, asset, scheduledTransactionId, value } = req;
+  try {
+    const employee = await Employee.findById(employeeId);
+    const employer = await Employer.findById(employerId);
+    // const scheduledTransaction = await ScheduledTransaction.findById(
+    //   scheduledTransactionId
+    // );
+
     const decryptedPrivateKey = decrypt(employer.bitcoinWalletprivateKey);
 
     const rate = await getCryptoPriceInUSD("BTC");
@@ -71,6 +129,9 @@ export const sendBitcoinToEmployee = async (req, res) => {
     const transaction = new Transaction({
       transactionId: null,
       amount: value.amount,
+      type: "scheduled",
+      frequency: value.frequency,
+      nextPaymentDate: new Date().toISOString(),
       walletType: "BTC",
       senderWalletAddress: employer.bitcoinWalletAddress,
       receiverWalletAddress: employee.walletAddress,
@@ -96,6 +157,8 @@ export const sendBitcoinToEmployee = async (req, res) => {
       await transaction.save();
       employer.transactions.push(transaction._id);
       await employer.save();
+      employee.transactions.push(transaction._id);
+      await employee.save();
       console.log(response.error);
       return res.status(500).json({
         success: false,
@@ -133,9 +196,7 @@ export const sendBitcoinToEmployee = async (req, res) => {
         transaction,
       },
     });
-  } catch (error) {
-    console.log(error);
-
+  } catch (e) {
     res.status(500).json({
       success: false,
       message: `Error sending bitcoin to employee`,
@@ -328,8 +389,8 @@ export const handleIncomingBitcoinTransaction = async (
 
 export const CheckBTCWalletAdressExists = async (req, res) => {
   try {
-    const  address  = req.params.address;
-    console.log("address",address);
+    const address = req.params.address;
+    console.log("address", address);
     const response = await checkBTCAddressExist(address.toString());
     console.log(response);
 

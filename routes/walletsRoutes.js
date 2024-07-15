@@ -4,14 +4,14 @@ import { authMiddleware } from "../middleware/ProtectRoutes.js";
 import {
   CheckBTCWalletAdressExists,
   handleIncomingBitcoinTransaction,
+  scheduleBitcoinEmployeeTranscation,
   sendBitcoinToAnyone,
-  sendBitcoinToEmployee,
 } from "../controllers/walletControllers/bitcoinControllers.js";
 import {
   checkPolygonWalletAdressExists,
   handleIncomingPolygonTransaction,
+  schedulePolygonEmployeeTranscation,
   sendPolygonToAnyone,
-  sendPolygonToEmployee,
 } from "../controllers/walletControllers/polygonControllers.js";
 import {
   getBalance,
@@ -21,14 +21,21 @@ import {
 const walletRouter = express.Router();
 
 walletRouter.post(
-  "/send-to-employee/bitcoin/",
+  "/schedule-transaction/bitcoin/",
   authMiddleware,
-  sendBitcoinToEmployee
+  scheduleBitcoinEmployeeTranscation
 );
+
+walletRouter.post(
+  "/schedule-transaction/polygon/",
+  authMiddleware,
+  schedulePolygonEmployeeTranscation
+);
+
 walletRouter.post(
   "/send-to-employee/polygon/",
   authMiddleware,
-  sendPolygonToEmployee
+  schedulePolygonEmployeeTranscation
 );
 
 walletRouter.post(

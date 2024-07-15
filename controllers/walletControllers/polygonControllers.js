@@ -1,4 +1,4 @@
-import { decrypt } from "../../helpers/helpers.js";
+import { decrypt, schedulePayment } from "../../helpers/helpers.js";
 import {
   sendCoinToAnyOneSchema,
   sendCoinToEmployeeSchema,
@@ -9,11 +9,11 @@ import {
   getWalletPolygonBalance,
   SendPolygon,
 } from "../../helpers/wallets/polygonWallet.js";
-import { Employee, Employer, Transaction } from "../../model/userModel.js";
+import { Employee, Employer, ScheduledTransaction, Transaction } from "../../model/userModel.js";
 
-export const sendPolygonToEmployee = async (req, res) => {
+export const schedulePolygonEmployeeTranscation = async (req, res) => {
   const employerId = req.user.id;
-  console.log("coole");
+  const asset = "polygon";
   try {
     const { value, error } = sendCoinToEmployeeSchema.validate(req.body);
     if (error) {
@@ -46,13 +46,57 @@ export const sendPolygonToEmployee = async (req, res) => {
         message: `Employee with ID ${value.employeeId} does not belong to this employer`,
       });
     }
-
-    if (employer.polygonBalance < value.amount) {
+    const polygonWalletBalance = await getWalletPolygonBalance(
+      employer.polygonWalletAddress
+    );
+    if (polygonWalletBalance < value.amount) {
       return res.status(400).json({
         success: false,
         message: `Insufficient balance`,
       });
     }
+
+    const scheduledTransaction = ScheduledTransaction({
+      employer: employer._id,
+      employee: employee._id,
+      frequency: value.frequency,
+      scheduledDate: value.hour,
+      amount: value.amount,
+      walletType: "Polygon",
+    });
+    await scheduledTransaction.save();
+
+    employer.scheduleTransaction.push(scheduledTransaction._id);
+    await employer.save();
+    employee.scheduleTransaction = scheduledTransaction._id;
+    await employee.save();
+    const { hour, minute, day, date } = value;
+    console.log(minute, hour, day, date);
+    await schedulePayment(
+      employer._id,
+      employee._id,
+      value,
+      asset,
+      hour,
+      minute,
+      day,
+      date
+    );
+    return res.status(200).json({
+      success: true,
+      message: `Payment scheduled successfully`,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const sendPolygonToEmployee = async (req, res) => {
+  const { employerId, employeeId, asset, scheduledTransactionId, value } = req;
+  try {
+    const employee = await Employee.findById(employeeId);
+    const employer = await Employer.findById(employerId);
 
     const decryptedPrivateKey = decrypt(employer.polygonWalletprivateKey);
     const rate = await getCryptoPriceInUSD("MATIC");
@@ -129,7 +173,6 @@ export const sendPolygonToEmployee = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 export const sendPolygonToAnyone = async (req, res) => {
   const employerId = req.user.id;
 
