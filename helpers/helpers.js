@@ -119,8 +119,8 @@ export const schedulePayment = async (
   let cronExpression;
   console.log("erroror", value.frequency);
 
-  const now = new Date();
-  const scheduledTimeToday = new Date(now);
+  const now = new Date().toISOString();
+  const scheduledTimeToday = new Date(now).toISOString();
   // console.log("timesdss", now, scheduledTimeToday);
   scheduledTimeToday.setHours(hour);
   scheduledTimeToday.setMinutes(minute);
