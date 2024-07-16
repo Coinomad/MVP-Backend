@@ -119,12 +119,18 @@ export const schedulePayment = async (
   let cronExpression;
   console.log("erroror", value.frequency);
 
-  const now = new Date().toISOString();
-  const scheduledTimeToday = new Date(now).toISOString();
+  const now = new Date();
+  const scheduledTimeToday = new Date(now);
   // console.log("timesdss", now, scheduledTimeToday);
   scheduledTimeToday.setHours(hour);
   scheduledTimeToday.setMinutes(minute);
   scheduledTimeToday.setSeconds(0);
+
+  const scheduledTimeTodayISO = scheduledTimeToday.toISOString();
+  const nowISO = now.toISOString();
+  // Log the times to the console
+  console.log("Current time:", now.toISOString());
+  console.log("Scheduled time today:", scheduledTimeTodayISO);
   console.log("timesdss", now, scheduledTimeToday);
   switch (value.frequency) {
     case "daily":
@@ -140,7 +146,7 @@ export const schedulePayment = async (
   }
   console.log("cronExpression", cronExpression);
 
-  if (now < scheduledTimeToday) {
+  if (nowISO < scheduledTimeTodayISO) {
     console.log("timesdss", now, scheduledTimeToday);
     // Schedule a job for today at the specified time
     await scheduledPaymentQueue.add(
@@ -151,7 +157,9 @@ export const schedulePayment = async (
         value,
       },
       {
-        delay: scheduledTimeToday.getTime() - now.getTime(),
+        delay:
+          new Date(scheduledTimeTodayISO).getTime() -
+          new Date(nowISO).getTime(),
         jobId: `${employerId}-${employeeId}-${value.amount}-initial-${value.frequency}`,
       }
     );
