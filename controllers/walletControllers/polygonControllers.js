@@ -84,18 +84,18 @@ export const schedulePolygonEmployeeTranscation = async (req, res) => {
     await employer.save();
     employee.scheduleTransaction = scheduledTransaction._id;
     await employee.save();
-    const { hour, minute, day, date } = value;
-    console.log(minute, hour, day, date);
-    await schedulePayment(
-      employer._id,
-      employee._id,
-      value,
-      asset,
-      hour,
-      minute,
-      day,
-      date
-    );
+    // const { hour, minute, day, date } = value;
+    // console.log(minute, hour, day, date);
+    // await schedulePayment(
+    //   employer._id,
+    //   employee._id,
+    //   value,
+    //   asset,
+    //   hour,
+    //   minute,
+    //   day,
+    //   date
+    // );
     return res.status(200).json({
       success: true,
       message: `Payment scheduled successfully`,
