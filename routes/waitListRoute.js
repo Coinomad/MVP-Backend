@@ -1,6 +1,9 @@
 import express from "express";
-import { WaitListController } from "../controllers/waitListController.js";
+import {
+  getWaitListController,
+  WaitListController,
+} from "../controllers/waitListController.js";
 
 const waitListRouter = express.Router();
-waitListRouter.post("/", WaitListController);
+waitListRouter.route("/").post(WaitListController).get(getWaitListController);
 export default waitListRouter;
