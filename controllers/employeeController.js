@@ -1,12 +1,7 @@
-import { employeeSchema, employeeUpdateSchema } from "../helpers/validation.js";
-import {
-  Employee,
-  Employer,
+const { employeeSchema, employeeUpdateSchema } = require("../helpers/validation.js");
+const { Employee, Employer } = require("../model/userModel.js");
 
-  // User,
-} from "../model/userModel.js";
-
-export const registerEmployee = async (req, res) => {
+const registerEmployee = async (req, res) => {
   const employerId = req.user.id;
   try {
     // Validation of data entered
@@ -29,6 +24,7 @@ export const registerEmployee = async (req, res) => {
         message: "Email is already in use",
       });
     }
+
     const existingEmployeeWallet = await Employee.findOne({
       walletAddress: value.walletAddress,
     });
@@ -72,7 +68,7 @@ export const registerEmployee = async (req, res) => {
   }
 };
 
-export const getEmployees = async (req, res) => {
+const getEmployees = async (req, res) => {
   const employerId = req.user.id;
   try {
     // Find the Employer by email
@@ -80,9 +76,10 @@ export const getEmployees = async (req, res) => {
     if (!employer) {
       return res.status(404).json({
         success: false,
-        message: "Employee not found",
+        message: "Employer not found",
       });
     }
+
     // Find employees under the employer
     const employees = await Employee.find({ employer: employer._id })
       .populate("employer")
@@ -112,7 +109,7 @@ export const getEmployees = async (req, res) => {
   }
 };
 
-export const updateEmployeeData = async (req, res) => {
+const updateEmployeeData = async (req, res) => {
   const { employeeId } = req.params;
   const employerId = req.user.id;
   try {
@@ -130,7 +127,7 @@ export const updateEmployeeData = async (req, res) => {
     if (!employer) {
       return res.status(404).json({
         success: false,
-        message: "Employee not found",
+        message: "Employer not found",
       });
     }
 
@@ -167,7 +164,7 @@ export const updateEmployeeData = async (req, res) => {
   }
 };
 
-export const deleteEmployee = async (req, res) => {
+const deleteEmployee = async (req, res) => {
   const { employeeId } = req.params;
   const employerId = req.user.id;
   try {
@@ -206,4 +203,11 @@ export const deleteEmployee = async (req, res) => {
       message: "Couldn't delete employee. Please try again later.",
     });
   }
+};
+
+module.exports = {
+  registerEmployee,
+  getEmployees,
+  updateEmployeeData,
+  deleteEmployee,
 };

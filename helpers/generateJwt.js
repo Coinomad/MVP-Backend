@@ -1,5 +1,5 @@
-import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
+const jwt = require("jsonwebtoken");
+const dotenv = require("dotenv");
 
 dotenv.config();
 
@@ -7,7 +7,7 @@ const options = {
   expiresIn: "10y",
 };
 
-export const generateJwt = async (email, userId) => {
+const generateJwt = async (email, userId) => {
   try {
     const payload = { email: email, id: userId.toHexString() };
     const token = jwt.sign(payload, process.env.JWT_SECRET, options);
@@ -17,8 +17,11 @@ export const generateJwt = async (email, userId) => {
   }
 };
 
-
-export const verifyToken = (token) => {
-  return jwt.verify(token,process.env.JWT_SECRET);
+const verifyToken = (token) => {
+  return jwt.verify(token, process.env.JWT_SECRET);
 };
 
+module.exports = {
+  generateJwt,
+  verifyToken,
+};

@@ -1,11 +1,11 @@
-import express from "express";
-import {
+const express = require("express");
+const {
   deleteEmployee,
   getEmployees,
   registerEmployee,
   updateEmployeeData,
-} from "../controllers/employeeController.js";
-import { authMiddleware } from "../middleware/ProtectRoutes.js";
+} = require("../controllers/employeeController.js");
+const { authMiddleware } = require("../middleware/ProtectRoutes.js");
 
 const employeeRoutes = express.Router();
 
@@ -15,10 +15,6 @@ employeeRoutes.get("/getemployees", authMiddleware, getEmployees);
 
 employeeRoutes.put("/update/:employeeId", authMiddleware, updateEmployeeData);
 
-employeeRoutes.delete(
-  "/delete/:employeeId",
-  authMiddleware,
-  deleteEmployee
-);
+employeeRoutes.delete("/delete/:employeeId", authMiddleware, deleteEmployee);
 
-export default employeeRoutes;
+module.exports = employeeRoutes;

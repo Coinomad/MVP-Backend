@@ -1,26 +1,26 @@
-import {
+const {
   decrypt,
   getBitcoinActualBalance,
   schedulePayment,
-} from "../../helpers/helpers.js";
-import {
+} = require("../../helpers/helpers.js");
+const {
   sendCoinToAnyOneSchema,
   sendCoinToEmployeeSchema,
-} from "../../helpers/validation.js";
-import {
+} = require("../../helpers/validation.js");
+const {
   checkBTCAddressExist,
   getCryptoPriceInUSD,
   getWalletBTCBalance,
   SendBTC,
-} from "../../helpers/wallets/btcWallet.js";
-import {
+} = require("../../helpers/wallets/btcWallet.js");
+const {
   Employee,
   Employer,
   ScheduledTransaction,
   Transaction,
-} from "../../model/userModel.js";
+} = require("../../model/userModel.js");
 
-export const scheduleBitcoinEmployeeTranscation = async (req, res) => {
+const scheduleBitcoinEmployeeTranscation = async (req, res) => {
   const employerId = req.user.id;
   const asset = "bitcoin";
   try {
@@ -39,9 +39,6 @@ export const scheduleBitcoinEmployeeTranscation = async (req, res) => {
         .json({ success: false, message: "Employer not found" });
     }
 
-    
-    
-    
     const employee = await Employee.findById(value.employeeId);
     if (!employee) {
       return res.status(400).json({
@@ -56,7 +53,6 @@ export const scheduleBitcoinEmployeeTranscation = async (req, res) => {
         message: `Employee Salary Already scheduled`,
       });
     }
-
 
     // Ensure the employee belongs to the employer
     if (!employer.employees.some((emp) => emp.equals(employee._id))) {
@@ -79,7 +75,7 @@ export const scheduleBitcoinEmployeeTranscation = async (req, res) => {
       });
     }
 
-    const scheduledTransaction = ScheduledTransaction({
+    const scheduledTransaction = new ScheduledTransaction({
       employer: employer._id,
       employee: employee._id,
       frequency: value.frequency,
@@ -117,7 +113,7 @@ export const scheduleBitcoinEmployeeTranscation = async (req, res) => {
   }
 };
 
-export const sendBitcoinToEmployee = async (req, res) => {
+const sendBitcoinToEmployee = async (req, res) => {
   const { employerId, employeeId, asset, scheduledTransactionId, value } = req;
   try {
     const employee = await Employee.findById(employeeId);
@@ -219,7 +215,7 @@ export const sendBitcoinToEmployee = async (req, res) => {
   }
 };
 
-export const sendBitcoinToAnyone = async (req, res) => {
+const sendBitcoinToAnyone = async (req, res) => {
   const employerId = req.user.id;
 
   try {
@@ -341,14 +337,9 @@ export const sendBitcoinToAnyone = async (req, res) => {
   }
 };
 
-export const handleIncomingBitcoinTransaction = async (
-  req,
-  res,
-  walletType
-) => {
+const handleIncomingBitcoinTransaction = async (req, res, walletType) => {
   try {
-    const { address, amount, blockNumber, counterAddress, txId, chain } =
-      req.body;
+    const { address, amount, blockNumber, counterAddress, txId, chain } = req.body;
 
     // Find the employer associated with the address
     const employer = await Employer.findOne({
@@ -400,13 +391,13 @@ export const handleIncomingBitcoinTransaction = async (
     console.error("Error processing webhook:", error);
 
     return res.status(500).json({
-      success: failed,
+      success: false,
       message: "Failed to process webhook",
     });
   }
 };
 
-export const CheckBTCWalletAdressExists = async (req, res) => {
+const CheckBTCWalletAdressExists = async (req, res) => {
   try {
     const address = req.params.address;
     console.log("address", address);
@@ -420,4 +411,12 @@ export const CheckBTCWalletAdressExists = async (req, res) => {
       .status(500)
       .json({ success: false, message: "Internal server error" });
   }
+};
+
+module.exports = {
+  scheduleBitcoinEmployeeTranscation,
+  sendBitcoinToEmployee,
+  sendBitcoinToAnyone,
+  handleIncomingBitcoinTransaction,
+  CheckBTCWalletAdressExists
 };

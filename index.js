@@ -1,18 +1,23 @@
-import express from "express";
-import dotenv from "dotenv";
-import ExpressMongoSanitize from "express-mongo-sanitize";
-import { notFoundMiddleware } from "./middleware/notFoundMiddleware.js";
-import mongoose from "mongoose";
-import waitListRouter from "./routes/waitListRoute.js";
-import cors from "cors";
-import employerauthRoutes from "./routes/employerAuthRoutes.js";
-import walletRouter from "./routes/walletsRoutes.js";
-import employeeRoutes from "./routes/employeeRoutes.js";
-import { createWebhookSubscription } from "./helpers/helpers.js";
-import { generatePolygonWallet } from "./helpers/wallets/polygonWallet.js";
-import { checkBTCAddressExist, generateBTCWallet } from "./helpers/wallets/btcWallet.js";
-import router from "./helpers/bullBoard.js";
-// import  bullBoardRouter from "./helpers/bullBoard.js";
+const express = require("express");
+const dotenv = require("dotenv");
+const ExpressMongoSanitize = require("express-mongo-sanitize");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const {errorMiddleware} = require("./middleware/notFoundMiddleware.js");
+const waitListRouter = require("./routes/waitListRoute.js");
+const employerauthRoutes = require("./routes/employerAuthRoutes.js");
+const walletRouter = require("./routes/walletsRoutes.js");
+const employeeRoutes = require("./routes/employeeRoutes.js");
+const { createWebhookSubscription } = require("./helpers/helpers.js");
+const { generatePolygonWallet } = require("./helpers/wallets/polygonWallet.js");
+const {
+  checkBTCAddressExist,
+  generateBTCWallet,
+} = require("./helpers/wallets/btcWallet.js");
+const router = require("./helpers/bullBoard.js");
+const morgan = require('morgan');
+const helmet = require('helmet');
+// const bullBoardRouter = require("./helpers/bullBoard.js");
 
 dotenv.config();
 
@@ -21,6 +26,10 @@ const app = express();
 // Sanitize user input
 app.use(ExpressMongoSanitize());
 app.use(cors());
+// logger
+app.use(morgan('combined'));
+// Use Helmet to set security headers
+app.use(helmet());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -34,14 +43,16 @@ app.get("/", async (req, res) => {
   try {
     const value1 = await generatePolygonWallet();
     const value2 = await generateBTCWallet();
-    const value3= await checkBTCAddressExist("tb1q3eshhdgf5g7ealzj292chtey4x6ygkp2yzyvf2")
+    const value3 = await checkBTCAddressExist(
+      "tb1q3eshhdgf5g7ealzj292chtey4x6ygkp2yzyvf2"
+    );
     res.status(200).json({
       success: true,
       message: "Wallets generated successfully",
       data: {
         polygonWallet: value1,
         btcWallet: value2,
-        checkBTCAddressExist: value3
+        checkBTCAddressExist: value3,
       },
     });
   } catch (error) {
@@ -54,7 +65,7 @@ app.get("/", async (req, res) => {
 });
 
 // for bull ui
-app.use('/admin/queues', router);
+app.use("/admin/queues", router);
 
 // app.use('/admin/queues', bullBoardRouter);
 
@@ -70,12 +81,11 @@ app.use("/v1/api/waitlist", waitListRouter);
 // /v1/api/wallet/
 app.use("/v1/api/wallet", walletRouter);
 
-// for notfound 404
-app.use(notFoundMiddleware);
+// Error-handling middleware should be the last middleware added
+app.use(errorMiddleware);
 
 // Start the worker
-import './worker.js';
-
+require("./worker.js");
 
 app.listen(port, () => {
   createWebhookSubscription();

@@ -1,13 +1,16 @@
-// const Queue = require('bull');
-
-import { sendBitcoinToEmployee } from "./controllers/walletControllers/bitcoinControllers.js";
-import { sendPolygonToEmployee } from "./controllers/walletControllers/polygonControllers.js";
-import { scheduledPaymentQueue } from "./helpers/queues.js";
+const {
+  sendBitcoinToEmployee,
+} = require("./controllers/walletControllers/bitcoinControllers");
+const {
+  sendPolygonToEmployee,
+} = require("./controllers/walletControllers/polygonControllers");
+const { scheduledPaymentQueue } = require("./helpers/queues");
 
 // Function to process a scheduled payment
-async function processScheduledPayment(job) {
+const processScheduledPayment = async (job) => {
   const { employerId, employeeId, asset, scheduledTransactionId, value } =
     job.data;
+
   // Simulate request and response objects
   const req = { employerId, employeeId, asset, scheduledTransactionId, value };
   const res = {
@@ -15,6 +18,7 @@ async function processScheduledPayment(job) {
       json: (data) => console.log(`Response: ${JSON.stringify(data)}`),
     }),
   };
+
   try {
     // Call the sendBitcoinToEmployee function
     if (asset === "bitcoin") {
@@ -28,7 +32,7 @@ async function processScheduledPayment(job) {
     console.error(`Failed to process payment: ${error.message}`);
     throw error;
   }
-}
+};
 
 // Add the processor to the queue
 scheduledPaymentQueue.process(processScheduledPayment);

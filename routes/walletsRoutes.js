@@ -1,22 +1,22 @@
-import express from "express";
+const express = require("express");
 
-import { authMiddleware } from "../middleware/ProtectRoutes.js";
-import {
+const { authMiddleware } = require("../middleware/ProtectRoutes.js");
+const {
   CheckBTCWalletAdressExists,
   handleIncomingBitcoinTransaction,
   scheduleBitcoinEmployeeTranscation,
   sendBitcoinToAnyone,
-} from "../controllers/walletControllers/bitcoinControllers.js";
-import {
+} = require("../controllers/walletControllers/bitcoinControllers.js");
+const {
   checkPolygonWalletAdressExists,
   handleIncomingPolygonTransaction,
   schedulePolygonEmployeeTranscation,
   sendPolygonToAnyone,
-} from "../controllers/walletControllers/polygonControllers.js";
-import {
+} = require("../controllers/walletControllers/polygonControllers.js");
+const {
   getBalance,
   getTransactions,
-} from "../controllers/transactionsController.js";
+} = require("../controllers/transactionsController.js");
 
 const walletRouter = express.Router();
 
@@ -69,4 +69,4 @@ walletRouter.get(
   checkPolygonWalletAdressExists
 );
 
-export default walletRouter;
+module.exports = walletRouter;

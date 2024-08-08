@@ -1,12 +1,12 @@
-import { getBitcoinActualBalance } from "../helpers/helpers.js";
-import {
+const { getBitcoinActualBalance } = require("../helpers/helpers.js");
+const {
   getCryptoPriceInUSD,
   getWalletBTCBalance,
-} from "../helpers/wallets/btcWallet.js";
-import { getWalletPolygonBalance } from "../helpers/wallets/polygonWallet.js";
-import { Employer } from "../model/userModel.js";
+} = require("../helpers/wallets/btcWallet.js");
+const { getWalletPolygonBalance } = require("../helpers/wallets/polygonWallet.js");
+const { Employer } = require("../model/userModel.js");
 
-export const getTransactions = async (req, res) => {
+const getTransactions = async (req, res) => {
   const employerId = req.user.id;
 
   try {
@@ -47,7 +47,7 @@ export const getTransactions = async (req, res) => {
   }
 };
 
-export const getBalance = async (req, res) => {
+const getBalance = async (req, res) => {
   const employerId = req.user.id;
 
   try {
@@ -119,4 +119,9 @@ export const getBalance = async (req, res) => {
       message: "Server error. Please try again later.",
     });
   }
+};
+
+module.exports = {
+  getTransactions,
+  getBalance,
 };

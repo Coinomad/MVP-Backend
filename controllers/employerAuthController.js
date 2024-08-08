@@ -1,11 +1,11 @@
-import {
+const {
   generateBTCWallet,
   getCryptoPriceInUSD,
   getWalletBTCBalance,
-} from "../helpers/wallets/btcWallet.js";
-import { generateJwt } from "../helpers/generateJwt.js";
-import { sendEmail } from "../helpers/mailer.js";
-import {
+} = require("../helpers/wallets/btcWallet.js");
+const { generateJwt } = require("../helpers/generateJwt.js");
+const { sendEmail } = require("../helpers/mailer.js");
+const {
   employerDetailsSchema,
   employerEmailSchema,
   employerSchema,
@@ -17,11 +17,11 @@ import {
   userSchemaLogin,
   userSchemaLogout,
   userSchemaResetPassword,
-} from "../helpers/validation.js";
-import { Employer } from "../model/userModel.js";
-import { v4 as uuid } from "uuid";
-import employerauthRoutes from "../routes/employerAuthRoutes.js";
-import {
+} = require("../helpers/validation.js");
+const { Employer } = require("../model/userModel.js");
+const { v4: uuid } = require("uuid");
+const employerauthRoutes = require("../routes/employerAuthRoutes.js");
+const {
   hashPassword,
   comparePasswords,
   decrypt,
@@ -29,13 +29,13 @@ import {
   getBitcoinActualBalance,
   convertWalletAddressToQRCode,
   createWebhookSubscription,
-} from "../helpers/helpers.js";
-import {
+} = require("../helpers/helpers.js");
+const {
   generatePolygonWallet,
   getWalletPolygonBalance,
-} from "../helpers/wallets/polygonWallet.js";
+} = require("../helpers/wallets/polygonWallet.js");
 
-export const employerEmailSignup = async (req, res) => {
+const employerEmailSignup = async (req, res) => {
   try {
     // Validate the data entered
     const { error, value } = employerEmailSchema.validate(req.body);
@@ -70,10 +70,6 @@ export const employerEmailSignup = async (req, res) => {
       });
     }
 
-    // Generate unique ID for the user
-    // const userId = uuid();
-    // value.userId = userId;
-
     // Store the verification code and its expiry
     value.emailToken = verificationCode;
     value.emailTokenExpires = new Date(codeExpiry);
@@ -98,7 +94,7 @@ export const employerEmailSignup = async (req, res) => {
   }
 };
 
-export const employerVerfiyEmailSignup = async (req, res) => {
+const employerVerfiyEmailSignup = async (req, res) => {
   try {
     // Validate the data entered
     const { error, value } = userSchemaActivate.validate(req.body);
@@ -151,7 +147,7 @@ export const employerVerfiyEmailSignup = async (req, res) => {
   }
 };
 
-export const employerResendToken = async (req, res) => {
+const employerResendToken = async (req, res) => {
   try {
     // Validation of data entered
     const { value, error } = resendTokenSchema.validate(req.body);
@@ -174,7 +170,7 @@ export const employerResendToken = async (req, res) => {
       });
     }
 
-    // Find the user by email, token, and token expiry date
+    // Find the user by email
     const employer = await Employer.findOne({
       email: value.email,
     });
@@ -206,7 +202,7 @@ export const employerResendToken = async (req, res) => {
   }
 };
 
-export const employerDetails = async (req, res) => {
+const employerDetails = async (req, res) => {
   try {
     // Validate the data entered
     const { error, value } = employerDetailsSchema.validate(req.body);
@@ -307,7 +303,7 @@ export const employerDetails = async (req, res) => {
   }
 };
 
-export const employerLogin = async (req, res) => {
+const employerLogin = async (req, res) => {
   try {
     // Validate the request body
     const { error, value } = userSchemaLogin.validate(req.body);
@@ -332,253 +328,183 @@ export const employerLogin = async (req, res) => {
     if (!employer.active) {
       return res.status(400).json({
         success: false,
-        message: "You must verify your email to activate your account",
+        message: "Account not activated",
       });
     }
 
-    // Verify the password
-    const isPasswordValid = await comparePasswords(
-      value.password,
-      employer.password
-    );
-    if (!isPasswordValid) {
+    // Check if the password matches
+    const isMatch = await comparePasswords(value.password, employer.password);
+    if (!isMatch) {
       return res.status(400).json({
         success: false,
-        message: "Invalid credentials",
+        message: "Incorrect password",
       });
     }
 
-    // Generate the JWT access token
-    const { error: tokenError, token } = await generateJwt(
-      employer.email,
-      employer._id
-    );
-
-    if (tokenError) {
-      return res.status(500).json({
-        success: false,
-        message: "Couldn't create access token. Please try again later",
-      });
-    }
-
-    const bitcoinWalletBalance = await getWalletBTCBalance(
-      employer.bitcoinWalletAddress
-    );
-    if (bitcoinWalletBalance.error) {
-      console.log("bitcoinWalletBalance.error", bitcoinWalletBalance.error);
-      return res.status(500).json({
-        success: false,
-        message: `bitcoin wallet balance error`,
-      });
-    }
-
-    const bitcoinActualBalance = await getBitcoinActualBalance(
-      Number(bitcoinWalletBalance.incoming),
-      Number(bitcoinWalletBalance.incomingPending),
-      Number(bitcoinWalletBalance.outgoing),
-      Number(bitcoinWalletBalance.outgoingPending)
-    );
-
-    const polygonWalletBalance = await getWalletPolygonBalance(
-      employer.polygonWalletAddress
-    );
-    if (polygonWalletBalance.error) {
-      return res.status(500).json({
-        success: false,
-        message: `polygon wallet error`,
-      });
-    }
-
-    employer.bitcoinWalletBalance = bitcoinWalletBalance;
-    employer.polygonWalletBalance = polygonWalletBalance;
-    employer.accessToken = token;
-
-    await employer.save();
-
-    //convert bitcoin wallet address to qr code
-    const employerbitcoinWalletQrCode = await convertWalletAddressToQRCode(
-      employer.bitcoinWalletAddress
-    );
-
-    //convert polygon wallet address to qr code
-    const employerPolygonWalletQrCode = await convertWalletAddressToQRCode(
-      employer.polygonWalletAddress
-    );
-
- 
-    // Return success response
+    // Generate JWT token
+    const token = await generateJwt(employer._id, employer.email);
     return res.status(200).json({
       success: true,
-      message: "Employer logged in successfully",
+      message: "Login successful",
       data: {
-        accessToken: token,
-        email: employer.email,
-        firstName: employer.firstName,
-        lastName: employer.lastName,
-        organizationName: employer.organizationName,
-        bitcoinWalletBalance: bitcoinWalletBalance,
-        polygonWalletBalance: polygonWalletBalance,
-        bitcoinTotalBalance: bitcoinActualBalance,
-        bitcoinWalletQrCode: employerbitcoinWalletQrCode,
-        polygonWalletQrCode: employerPolygonWalletQrCode,
-        bitcoinWalletAddress: employer.bitcoinWalletAddress,
-        polygonWalletAddress: employer.polygonWalletAddress,
-        bitcoinWalletprivateKey: employer.bitcoinWalletprivateKey,
-        polygonWalletprivateKey: employer.polygonWalletprivateKey,
-        uniqueLink: employer.uniqueLink,
+        token,
       },
     });
-  } catch (err) {
-    console.error("Login error", err);
+  } catch (error) {
+    console.error("signup-error", error);
     return res.status(500).json({
       success: false,
-      message: "Couldn't login. Please try again later.",
+      message: "Cannot Login",
     });
   }
 };
 
-export const employerForgotPassword = async (req, res) => {
+const employerForgotPassword = async (req, res) => {
   try {
-    // Validate the request body
+    // Validate the data entered
     const { error, value } = userSchemaForgotPassword.validate(req.body);
+
     if (error) {
-      console.log("Validation error:", error.message);
+      console.log(error.message);
       return res.status(400).json({
         success: false,
         message: error.message,
       });
     }
 
-    // Find the employer by email
+    // Check if email exists
     const employer = await Employer.findOne({ email: value.email });
     if (!employer) {
-      console.log("Employer not found for email:", value.email);
       return res.status(404).json({
         success: false,
         message: "Account not found",
       });
     }
 
-    // Generate a random code for password reset
-    const resetCode = Math.floor(100000 + Math.random() * 900000);
+    // Generate reset token
+    const resetToken = uuid();
+    const resetTokenExpiry = Date.now() + 60 * 60 * 1000; // 1 hour
 
-    // Send the password reset email
-    const emailResponse = await sendEmail(employer.email, resetCode);
-    if (emailResponse.error) {
-      console.error("Email sending error:", emailResponse.error.message);
+    // Update user with reset token and expiry
+    employer.resetToken = resetToken;
+    employer.resetTokenExpiry = resetTokenExpiry;
+    await employer.save();
+
+    // Send reset token via email
+    const emailResult = await sendEmail(value.email, resetToken);
+    if (emailResult.error) {
       return res.status(500).json({
         success: false,
-        message: "Couldn't send mail. Please try again later.",
+        message: "Couldn't send reset email.",
       });
     }
 
-    // Set the reset password token and expiry time
-    const resetPasswordExpires = Date.now() + 60 * 1000 * 15; // 15 minutes
-    employer.resetPasswordToken = resetCode;
-    employer.resetPasswordExpires = resetPasswordExpires;
-
-    // Save the changes to the employer document
-    await employer.save();
-
-    // Return success response
     return res.status(200).json({
       success: true,
-      message: "Password reset email sent successfully",
+      message: "Reset email sent",
     });
   } catch (error) {
-    console.error("Forgot password error:", error);
+    console.error("forgot-password-error", error);
     return res.status(500).json({
       success: false,
-      message: "An error occurred while processing your request.",
+      message: "Error Occurred",
     });
   }
 };
 
-export const employerResetPassword = async (req, res) => {
+const employerResetPassword = async (req, res) => {
   try {
-    // Validate the request body
+    // Validate the data entered
     const { error, value } = userSchemaResetPassword.validate(req.body);
+
     if (error) {
+      console.log(error.message);
       return res.status(400).json({
         success: false,
         message: error.message,
       });
     }
 
-    // Find the user by reset password token and expiry date
+    // Find the user by reset token and expiry
     const employer = await Employer.findOne({
-      resetPasswordToken: value.token,
-      resetPasswordExpires: { $gt: Date.now() },
+      resetToken: value.token,
+      resetTokenExpiry: { $gt: Date.now() },
     });
 
     if (!employer) {
-      return res.status(404).json({
+      return res.status(400).json({
         success: false,
-        message: "Account not found or reset token expired",
+        message: "Invalid or expired reset token",
       });
     }
 
     // Hash the new password
-    const hashedPassword = await hashPassword(value.newPassword);
+    const hashedPassword = await hashPassword(value.password);
 
-    // Update user password and reset token
+    // Update the user's password
     employer.password = hashedPassword;
-    employer.resetPasswordToken = null;
-    employer.resetPasswordExpires = null;
+    employer.resetToken = null;
+    employer.resetTokenExpiry = null;
 
-    // Save the changes
     await employer.save();
 
-    // Return success response
     return res.status(200).json({
       success: true,
-      message: "Password has been changed successfully",
+      message: "Password has been reset",
     });
   } catch (error) {
     console.error("reset-password-error", error);
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Error Occurred",
     });
   }
 };
 
-// export const employerLogout = async (req, res) => {
-//   try {
-//     // Validate the request body
-//     const { error, value } = userSchemaLogout.validate(req.body);
-//     if (error) {
-//       return res.status(400).json({
-//         success: false,
-//         message: error.message,
-//       });
-//     }
+const employerLogout = async (req, res) => {
+  try {
+    // Validate the data entered
+    const { error, value } = userSchemaLogout.validate(req.body);
+    if (error) {
+      console.log(error.message);
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
 
-//     // Find the employer by user ID
-//     const employer = await Employer.findOne({ userId: value.id });
-//     if (!employer) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "Employer not found",
-//       });
-//     }
+    // Check if the user exists
+    const employer = await Employer.findOne({ email: value.email });
+    if (!employer) {
+      return res.status(404).json({
+        success: false,
+        message: "Account not found",
+      });
+    }
 
-//     // Clear the access token
-//     employer.accessToken = "";
+    // Perform logout actions (e.g., invalidate tokens)
+    // This depends on your token management and auth strategy
 
-//     // Save the changes
-//     await employer.save();
+    return res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  } catch (error) {
+    console.error("logout-error", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error Occurred",
+    });
+  }
+};
 
-//     // Return success response
-//     return res.status(200).json({
-//       success: true,
-//       message: "Employer logged out successfully",
-//     });
-//   } catch (error) {
-//     console.error("employer-logout-error:", error);
-//     return res.status(500).json({
-//       success: false,
-//       message: "An error occurred while processing your request",
-//     });
-//   }
-// };
+module.exports = {
+  employerEmailSignup,
+  employerVerfiyEmailSignup,
+  employerResendToken,
+  employerDetails,
+  employerLogin,
+  employerForgotPassword,
+  employerResetPassword,
+  employerLogout,
+};

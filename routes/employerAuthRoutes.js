@@ -1,5 +1,5 @@
-import express from "express";
-import {
+const express = require("express");
+const {
   employerDetails,
   employerEmailSignup,
   employerForgotPassword,
@@ -7,10 +7,9 @@ import {
   employerResendToken,
   employerResetPassword,
   employerVerfiyEmailSignup,
-} from "../controllers/employerAuthController.js";
+} = require("../controllers/employerAuthController.js");
 
 const employerauthRoutes = express.Router();
-
 
 employerauthRoutes.post("/signup/email", employerEmailSignup);
 
@@ -28,4 +27,4 @@ employerauthRoutes.patch("/reset", employerResetPassword);
 
 // employerauthRoutes.get("/logout", validateToken, Logout);
 
-export default employerauthRoutes;
+module.exports = employerauthRoutes;

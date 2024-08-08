@@ -1,8 +1,8 @@
-import { waitListSchema } from "../helpers/validation.js";
-import { WaitListModel } from "../model/waitListModel.js";
+const { waitListSchema } = require("../helpers/validation.js");
+const { WaitListModel } = require("../model/waitListModel.js");
 
 // WaitList
-export const WaitListController = async (req, res) => {
+const WaitListController = async (req, res) => {
   try {
     const result = waitListSchema.validate(req.body);
     if (result.error) {
@@ -35,7 +35,7 @@ export const WaitListController = async (req, res) => {
   }
 };
 
-export const getWaitListController = async (req, res) => {
+const getWaitListController = async (req, res) => {
   try {
     // check if email is already used
     const waitemail = await WaitListModel.find({});
@@ -51,4 +51,9 @@ export const getWaitListController = async (req, res) => {
       message: error.message,
     });
   }
+};
+
+module.exports = {
+  WaitListController,
+  getWaitListController,
 };

@@ -1,22 +1,22 @@
-import { decrypt, schedulePayment } from "../../helpers/helpers.js";
-import {
+const { decrypt, schedulePayment } = require("../../helpers/helpers.js");
+const {
   sendCoinToAnyOneSchema,
   sendCoinToEmployeeSchema,
-} from "../../helpers/validation.js";
-import { getCryptoPriceInUSD } from "../../helpers/wallets/btcWallet.js";
-import {
+} = require("../../helpers/validation.js");
+const { getCryptoPriceInUSD } = require("../../helpers/wallets/btcWallet.js");
+const {
   chekPolygonWalletAdressExists,
   getWalletPolygonBalance,
   SendPolygon,
-} from "../../helpers/wallets/polygonWallet.js";
-import {
+} = require("../../helpers/wallets/polygonWallet.js");
+const {
   Employee,
   Employer,
   ScheduledTransaction,
   Transaction,
-} from "../../model/userModel.js";
+} = require("../../model/userModel.js");
 
-export const schedulePolygonEmployeeTranscation = async (req, res) => {
+const schedulePolygonEmployeeTranscation = async (req, res) => {
   const employerId = req.user.id;
   const asset = "polygon";
   try {
@@ -52,8 +52,6 @@ export const schedulePolygonEmployeeTranscation = async (req, res) => {
       });
     }
 
-
-    
     if (!employer.employees.some((emp) => emp.equals(employee._id))) {
       return res.status(400).json({
         success: false,
@@ -70,7 +68,7 @@ export const schedulePolygonEmployeeTranscation = async (req, res) => {
       });
     }
 
-    const scheduledTransaction = ScheduledTransaction({
+    const scheduledTransaction = new ScheduledTransaction({
       employer: employer._id,
       employee: employee._id,
       frequency: value.frequency,
@@ -84,18 +82,7 @@ export const schedulePolygonEmployeeTranscation = async (req, res) => {
     await employer.save();
     employee.scheduleTransaction = scheduledTransaction._id;
     await employee.save();
-    // const { hour, minute, day, date } = value;
-    // console.log(minute, hour, day, date);
-    // await schedulePayment(
-    //   employer._id,
-    //   employee._id,
-    //   value,
-    //   asset,
-    //   hour,
-    //   minute,
-    //   day,
-    //   date
-    // );
+
     return res.status(200).json({
       success: true,
       message: `Payment scheduled successfully`,
@@ -106,7 +93,7 @@ export const schedulePolygonEmployeeTranscation = async (req, res) => {
   }
 };
 
-export const sendPolygonToEmployee = async (req, res) => {
+const sendPolygonToEmployee = async (req, res) => {
   const { employerId, employeeId, asset, scheduledTransactionId, value } = req;
   try {
     const employee = await Employee.findById(employeeId);
@@ -191,7 +178,8 @@ export const sendPolygonToEmployee = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-export const sendPolygonToAnyone = async (req, res) => {
+
+const sendPolygonToAnyone = async (req, res) => {
   const employerId = req.user.id;
 
   try {
@@ -303,10 +291,9 @@ export const sendPolygonToAnyone = async (req, res) => {
   }
 };
 
-export const handleIncomingPolygonTransaction = async (req, res) => {
+const handleIncomingPolygonTransaction = async (req, res) => {
   try {
-    const { address, amount, blockNumber, counterAddress, txId, chain } =
-      req.body;
+    const { address, amount, blockNumber, counterAddress, txId, chain } = req.body;
 
     // Find the employer associated with the address
     const employer = await Employer.findOne({
@@ -351,7 +338,7 @@ export const handleIncomingPolygonTransaction = async (req, res) => {
     // Respond with success
     res.status(201).json({
       success: true,
-      message: "Ploygon Coins received",
+      message: "Polygon Coins received",
     });
   } catch (error) {
     console.error("Error processing webhook:", error);
@@ -363,7 +350,7 @@ export const handleIncomingPolygonTransaction = async (req, res) => {
   }
 };
 
-export const checkPolygonWalletAdressExists = async (req, res) => {
+const checkPolygonWalletAdressExists = async (req, res) => {
   try {
     const { address } = req.body;
     const response = await chekPolygonWalletAdressExists(address);
@@ -374,4 +361,12 @@ export const checkPolygonWalletAdressExists = async (req, res) => {
       .status(500)
       .json({ success: false, message: "Internal server error" });
   }
+};
+
+module.exports = {
+  schedulePolygonEmployeeTranscation,
+  sendPolygonToEmployee,
+  sendPolygonToAnyone,
+  handleIncomingPolygonTransaction,
+  checkPolygonWalletAdressExists,
 };

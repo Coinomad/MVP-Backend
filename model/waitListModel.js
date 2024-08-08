@@ -1,9 +1,6 @@
-import mongoose from "mongoose";
-
-
+const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
-
 
 const waitListSchema = new Schema(
   {
@@ -17,4 +14,6 @@ const waitListSchema = new Schema(
   }
 );
 
-export const WaitListModel = mongoose.model("waitlist", waitListSchema);
+const WaitListModel = mongoose.model("waitlist", waitListSchema);
+
+module.exports = WaitListModel;

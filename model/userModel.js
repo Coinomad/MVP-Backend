@@ -1,9 +1,9 @@
-import mongoose from "mongoose";
-import crypto from "crypto";
-import bcrypt from "bcryptjs";
-import dotenv from "dotenv";
-import cryptoJs from "crypto-js";
-import { v4 as uuidv4 } from "uuid";
+const mongoose = require("mongoose");
+const crypto = require("crypto");
+const bcrypt = require("bcryptjs");
+const dotenv = require("dotenv");
+const cryptoJs = require("crypto-js");
+const { v4: uuidv4 } = require("uuid");
 dotenv.config();
 
 const Schema = mongoose.Schema;
@@ -123,7 +123,6 @@ const transactionSchema = new Schema(
       type: Number,
       required: true,
     },
-
     senderWalletAddress: {
       type: String,
       required: true,
@@ -147,7 +146,6 @@ const transactionSchema = new Schema(
       required: true,
       default: Date.now(),
     },
-
     status: {
       type: String,
       required: true,
@@ -211,10 +209,17 @@ const scheduleSchema = new Schema(
   }
 );
 
-export const Employer = mongoose.model("Employer", employerSchema);
-export const Employee = mongoose.model("Employee", employeeSchema);
-export const Transaction = mongoose.model("Transaction", transactionSchema);
-export const ScheduledTransaction = mongoose.model(
+const Employer = mongoose.model("Employer", employerSchema);
+const Employee = mongoose.model("Employee", employeeSchema);
+const Transaction = mongoose.model("Transaction", transactionSchema);
+const ScheduledTransaction = mongoose.model(
   "ScheduledTransaction",
   scheduleSchema
 );
+
+module.exports = {
+  Employer,
+  Employee,
+  Transaction,
+  ScheduledTransaction,
+};

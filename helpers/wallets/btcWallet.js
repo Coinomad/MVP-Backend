@@ -1,17 +1,17 @@
-import axios from "axios";
-import dotenv from "dotenv";
+const axios = require('axios');
+const dotenv = require('dotenv');
 
 dotenv.config();
 
-axios.defaults.baseURL = "https://api.tatum.io";
+axios.defaults.baseURL = 'https://api.tatum.io';
 axios.defaults.headers = {
-  accept: "application/json",
-  "x-api-key": process.env.APIKEY,
+  accept: 'application/json',
+  'x-api-key': process.env.APIKEY,
 };
 
-export const generateBTCWallet = async () => {
+const generateBTCWallet = async () => {
   try {
-    const walletResponse = await axios.get("/v3/bitcoin/wallet");
+    const walletResponse = await axios.get('/v3/bitcoin/wallet');
     const xpub = walletResponse.data.xpub;
     const mnemonic = walletResponse.data.mnemonic;
 
@@ -31,12 +31,12 @@ export const generateBTCWallet = async () => {
   } catch (error) {
     console.log(error);
     return {
-      error: { message: error },
+      error: { message: error.message },
     };
   }
 };
 
-export const getWalletBTCBalance = async (address) => {
+const getWalletBTCBalance = async (address) => {
   try {
     const walletResponse = await axios.get(
       `/v3/bitcoin/address/balance/${address}`
@@ -45,44 +45,39 @@ export const getWalletBTCBalance = async (address) => {
   } catch (error) {
     console.log(error);
     return {
-      error: { message: error },
+      error: { message: error.message },
     };
   }
 };
 
-export const SendBTC = async (sender, receiver) => {
-  // recivers [{ address: "sdfsdf", value: "sdfdf" }]
-  // sender { address: "fsdfsdf", privateKey: "592" }
+const sendBTC = async (sender, receiver) => {
   try {
-    const transactionResponse = await axios.post("/v3/bitcoin/transaction", {
+    const transactionResponse = await axios.post('/v3/bitcoin/transaction', {
       to: receiver,
       fromAddress: sender,
     });
     return transactionResponse.data;
   } catch (error) {
     return {
-      error: { message: error },
+      error: { message: error.message },
     };
   }
 };
 
-export const checkBTCAddressExist = async (walletAddress) => {
+const checkBTCAddressExist = async (walletAddress) => {
   try {
     const walletResponse = await axios.get(
       `/v3/bitcoin/address/balance/${walletAddress}`
     );
-    
-    if (walletResponse.data) {
-      return true;
-    }
-    // return false;
+
+    return walletResponse.data ? true : false;
   } catch (error) {
     console.log(error);
     return false;
   }
 };
 
-export const getDetailsBTCTransaction = async (hash) => {
+const getDetailsBTCTransaction = async (hash) => {
   try {
     const transactionResponse = await axios.get(
       `/v3/bitcoin/transaction/${hash}`
@@ -91,19 +86,28 @@ export const getDetailsBTCTransaction = async (hash) => {
     return transactionResponse.data;
   } catch (error) {
     return {
-      error: { message: error },
+      error: { message: error.message },
     };
   }
 };
 
-export const getCryptoPriceInUSD = async (currency) => {
+const getCryptoPriceInUSD = async (currency) => {
   try {
     const response = await axios.get(`v3/tatum/rate/${currency}?basePair=USD`);
     return response.data.value;
   } catch (error) {
     console.error(`Error fetching price for ${currency}:`, error.message);
     return {
-      error: { message: error },
+      error: { message: error.message },
     };
   }
+};
+
+module.exports = {
+  generateBTCWallet,
+  getWalletBTCBalance,
+  sendBTC,
+  checkBTCAddressExist,
+  getDetailsBTCTransaction,
+  getCryptoPriceInUSD,
 };
