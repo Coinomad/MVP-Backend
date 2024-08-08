@@ -39,6 +39,9 @@ export const scheduleBitcoinEmployeeTranscation = async (req, res) => {
         .json({ success: false, message: "Employer not found" });
     }
 
+    
+    
+    
     const employee = await Employee.findById(value.employeeId);
     if (!employee) {
       return res.status(400).json({
@@ -46,6 +49,14 @@ export const scheduleBitcoinEmployeeTranscation = async (req, res) => {
         message: `Employee with ID ${value.employeeId} not found`,
       });
     }
+    
+    if (employee.scheduleTransaction) {
+      return res.status(400).json({
+        success: false,
+        message: `Employee Salary Already scheduled`,
+      });
+    }
+
 
     // Ensure the employee belongs to the employer
     if (!employer.employees.some((emp) => emp.equals(employee._id))) {
@@ -82,17 +93,17 @@ export const scheduleBitcoinEmployeeTranscation = async (req, res) => {
     await employer.save();
     employee.scheduleTransaction = scheduledTransaction._id;
     await employee.save();
-    const { hour, minute, day, date } = value;
-    await schedulePayment(
-      employer._id,
-      employee._id,
-      value,
-      asset,
-      hour,
-      minute,
-      day,
-      date,
-    );
+    // const { hour, minute, day, date } = value;
+    // await schedulePayment(
+    //   employer._id,
+    //   employee._id,
+    //   value,
+    //   asset,
+    //   hour,
+    //   minute,
+    //   day,
+    //   date,
+    // );
     return res.status(200).json({
       success: true,
       message: `Payment scheduled successfully`,
@@ -163,6 +174,10 @@ export const sendBitcoinToEmployee = async (req, res) => {
       return res.status(500).json({
         success: false,
         message: `Transaction failed`,
+        data: {
+          transactionId: transaction.transactionId,
+          transaction,
+        },
       });
     }
 
@@ -282,6 +297,10 @@ export const sendBitcoinToAnyone = async (req, res) => {
       return res.status(500).json({
         success: false,
         message: `Transaction Failed`,
+        data: {
+          transactionId: transaction.transactionId,
+          transaction,
+        },
       });
     }
 

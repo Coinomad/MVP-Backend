@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 import cryptoJs from "crypto-js";
 import axios from "axios";
+import moment from "moment-timezone";
 import { scheduledPaymentQueue } from "./queues.js";
 
 dotenv.config();
@@ -119,12 +120,23 @@ export const schedulePayment = async (
   let cronExpression;
   console.log("erroror", value.frequency);
 
-  const now = new Date();
-  const scheduledTimeToday = new Date(now);
-  // console.log("timesdss", now, scheduledTimeToday);
-  scheduledTimeToday.setHours(hour);
-  scheduledTimeToday.setMinutes(minute);
-  scheduledTimeToday.setSeconds(0);
+  const now = moment().tz("UTC").toISOString();
+  // Create the scheduled time for today in UTC
+  const scheduledTimeToday = moment()
+    .tz("UTC")
+    .set({
+      hour,
+      minute,
+      second: 0,
+      millisecond: 0,
+    })
+    .toISOString();
+
+  // const scheduledTimeTodayISO = scheduledTimeToday.toISOString();
+  // const nowISO = now.toISOString();
+  // // Log the times to the console
+  // console.log("Current time:", now.toISOString());
+  // console.log("Scheduled time today:", scheduledTimeTodayISO);
   console.log("timesdss", now, scheduledTimeToday);
   switch (value.frequency) {
     case "daily":
@@ -151,7 +163,7 @@ export const schedulePayment = async (
         value,
       },
       {
-        delay: scheduledTimeToday.getTime() - now.getTime(),
+        delay: new Date(scheduledTimeToday).getTime() - new Date(now).getTime(),
         jobId: `${employerId}-${employeeId}-${value.amount}-initial-${value.frequency}`,
       }
     );

@@ -9,7 +9,12 @@ import {
   getWalletPolygonBalance,
   SendPolygon,
 } from "../../helpers/wallets/polygonWallet.js";
-import { Employee, Employer, ScheduledTransaction, Transaction } from "../../model/userModel.js";
+import {
+  Employee,
+  Employer,
+  ScheduledTransaction,
+  Transaction,
+} from "../../model/userModel.js";
 
 export const schedulePolygonEmployeeTranscation = async (req, res) => {
   const employerId = req.user.id;
@@ -40,6 +45,15 @@ export const schedulePolygonEmployeeTranscation = async (req, res) => {
       });
     }
 
+    if (employee.scheduleTransaction) {
+      return res.status(400).json({
+        success: false,
+        message: `Employee Salary Already scheduled`,
+      });
+    }
+
+
+    
     if (!employer.employees.some((emp) => emp.equals(employee._id))) {
       return res.status(400).json({
         success: false,
@@ -70,18 +84,18 @@ export const schedulePolygonEmployeeTranscation = async (req, res) => {
     await employer.save();
     employee.scheduleTransaction = scheduledTransaction._id;
     await employee.save();
-    const { hour, minute, day, date } = value;
-    console.log(minute, hour, day, date);
-    await schedulePayment(
-      employer._id,
-      employee._id,
-      value,
-      asset,
-      hour,
-      minute,
-      day,
-      date
-    );
+    // const { hour, minute, day, date } = value;
+    // console.log(minute, hour, day, date);
+    // await schedulePayment(
+    //   employer._id,
+    //   employee._id,
+    //   value,
+    //   asset,
+    //   hour,
+    //   minute,
+    //   day,
+    //   date
+    // );
     return res.status(200).json({
       success: true,
       message: `Payment scheduled successfully`,
@@ -136,6 +150,10 @@ export const sendPolygonToEmployee = async (req, res) => {
       return res.status(500).json({
         success: false,
         message: `Transaction failed`,
+        data: {
+          transactionId: transaction.transactionId,
+          transaction,
+        },
       });
     }
 
@@ -243,7 +261,10 @@ export const sendPolygonToAnyone = async (req, res) => {
       return res.status(500).json({
         success: false,
         message: "Transaction failed",
-        error: "Insufficient balance",
+        data: {
+          transactionId: transaction.transactionId,
+          transaction,
+        },
       });
     }
 
